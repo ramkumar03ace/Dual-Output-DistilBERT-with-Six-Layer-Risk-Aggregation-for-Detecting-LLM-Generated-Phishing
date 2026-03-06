@@ -104,9 +104,9 @@ Most phishing detectors catch traditional, human-written phishing emails. This p
 | Layer | Component | Weight | What it checks | Technology |
 |-------|-----------|--------|----------------|------------|
 | 1 | `email_classifier.py` | 15% | Email text — urgency, threats, AI-generated patterns | DistilBERT (fine-tuned, 99.17%) |
-| 2 | `url_analyzer.py` | 30% | Domain age, SSL, VirusTotal reputation, suspicious patterns | python-whois + ssl + VirusTotal API |
-| 3 | `web_crawler.py` | — | Actually visits URLs in sandboxed browser, takes screenshots | Playwright Chromium (multiprocessing) |
-| 4 | `visual_analyzer.py` | 25% | Detects fake login pages, brand impersonation (12+ brands) | Heuristic rules (CNN planned) |
+| 2 | `url_analyzer.py` | 25% | Domain age, SSL, VirusTotal reputation, suspicious patterns | python-whois + ssl + VirusTotal API |
+| 3 | `web_crawler.py` | 10% | Actually visits URLs in sandboxed browser, takes screenshots | Playwright Chromium (multiprocessing) |
+| 4 | `visual_analyzer.py` | 20% | Detects fake login pages, brand impersonation (12+ brands) | Heuristic rules (CNN planned) |
 | 5 | `link_checker.py` | 20% | Follows redirects, detects domain changes, URL shorteners | requests + redirect chain analysis |
 | — | `deep_router.py` | — | Combines all 5 layers into weighted risk score | Weighted aggregation + boost logic |
 
@@ -231,6 +231,7 @@ Hybrid-AI-Defense/
 ├── backend/
 │   ├── main.py                 # FastAPI app
 │   ├── config.py               # Settings (API keys, thresholds)
+│   ├── .env.example            # Environment variable template
 │   ├── analyzers/
 │   │   ├── email_parser.py     # URL/email extraction from text
 │   │   ├── url_analyzer.py     # WHOIS + SSL + VirusTotal + patterns
@@ -246,12 +247,17 @@ Hybrid-AI-Defense/
 │   │   └── email_classifier.py # DistilBERT model service
 │   ├── models/
 │   │   └── schemas.py          # Pydantic request/response schemas
+│   ├── tests/                  # Pytest test suite
+│   │   ├── conftest.py         # Shared fixtures
+│   │   ├── test_health.py      # Health endpoint tests
+│   │   ├── test_email_router.py # Email analysis tests
+│   │   └── test_deep_router.py  # Deep analysis tests
 │   └── screenshots/            # Crawled page screenshots
 │
-├── frontend/                   # (Week 4)
-│   ├── index.html
-│   ├── styles.css
-│   └── app.js
+├── frontend/
+│   ├── index.html              # Dashboard with progress stepper + history
+│   ├── styles.css              # Dark mode styles
+│   └── app.js                  # Logic + history + JSON export
 │
 ├── extension/                  # Chrome Extension (Gmail)
 │   ├── manifest.json           # Manifest V3 config
@@ -261,6 +267,9 @@ Hybrid-AI-Defense/
 │   ├── content.js              # Gmail email extractor
 │   ├── background.js           # Service worker
 │   └── icons/                  # Shield icons (16/48/128px)
+│
+├── docs/
+│   └── error-handling.md       # Layer failure modes & graceful degradation
 │
 └── notebooks/
     └── training.ipynb          # Colab notebook for training
@@ -272,11 +281,12 @@ Hybrid-AI-Defense/
 
 1. **ML Model** — Fine-tuned DistilBERT for phishing detection ✅
 2. **Backend API** — FastAPI service with all analyzers ✅
-3. **Web Application** — Dark mode dashboard with 5-layer results ✅
+3. **Web Application** — Dark mode dashboard with 5-layer results, history & export ✅
 4. **Chrome Extension** — Gmail integration for real-time scanning ✅
-5. **CNN Visual Model** — Screenshot-based fake login detection ⬜
-6. **Documentation** — Full project documentation ⬜
-7. **Paper (Optional)** — Research paper for publication ⬜
+5. **Test Suite** — Pytest tests for all API endpoints ✅
+6. **Documentation** — Error handling & architecture docs ✅
+7. **CNN Visual Model** — Screenshot-based fake login detection ⬜
+8. **Paper (Optional)** — Research paper for publication ⬜
 
 ---
 
@@ -330,4 +340,4 @@ uvicorn main:app --reload --port 8001
 
 ---
 
-*Last Updated: February 24, 2026 — Chrome Extension (Gmail integration) completed*
+*Last Updated: March 6, 2026 — Fixed weight inconsistencies, added tests, frontend improvements, documentation*

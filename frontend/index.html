@@ -68,6 +68,35 @@
                 <span class="btn-text">🔍 Deep Analyze</span>
                 <span class="spinner"></span>
             </button>
+
+            <!-- Progress Stepper (shown during analysis) -->
+            <div class="progress-stepper" id="progressStepper">
+                <div class="progress-step" id="step-text" data-step="1">
+                    <div class="progress-step__icon">🧠</div>
+                    <div class="progress-step__label">Text Classification</div>
+                    <div class="progress-step__status"></div>
+                </div>
+                <div class="progress-step" id="step-url" data-step="2">
+                    <div class="progress-step__icon">🔗</div>
+                    <div class="progress-step__label">URL Analysis</div>
+                    <div class="progress-step__status"></div>
+                </div>
+                <div class="progress-step" id="step-crawl" data-step="3">
+                    <div class="progress-step__icon">🕷️</div>
+                    <div class="progress-step__label">Web Crawling</div>
+                    <div class="progress-step__status"></div>
+                </div>
+                <div class="progress-step" id="step-visual" data-step="4">
+                    <div class="progress-step__icon">👁️</div>
+                    <div class="progress-step__label">Visual Analysis</div>
+                    <div class="progress-step__status"></div>
+                </div>
+                <div class="progress-step" id="step-links" data-step="5">
+                    <div class="progress-step__icon">🔀</div>
+                    <div class="progress-step__label">Link Checking</div>
+                    <div class="progress-step__status"></div>
+                </div>
+            </div>
         </section>
 
         <!-- ===== RESULTS SECTION ===== -->
@@ -162,6 +191,23 @@
                 <div class="card__title"><span class="icon">⚠️</span> Risk Factors</div>
                 <ul class="risk-factors__list" id="riskFactorsList"></ul>
             </div>
+
+            <!-- Export Button -->
+            <div class="export-bar">
+                <button class="btn-export" id="exportJsonBtn" title="Download results as JSON">
+                    📥 Export JSON
+                </button>
+            </div>
+        </section>
+
+        <!-- ===== HISTORY SECTION ===== -->
+        <section class="history-section" id="historySection" style="display:none;">
+            <div class="card">
+                <div class="card__title"><span class="icon">📋</span> Analysis History
+                    <button class="btn-clear-history" id="clearHistoryBtn" title="Clear all history">Clear</button>
+                </div>
+                <div class="history-list" id="historyList"></div>
+            </div>
         </section>
 
         <!-- ===== ARCHITECTURE SECTION ===== -->
@@ -185,7 +231,7 @@
                             <div class="arch-step__desc">WHOIS domain age, SSL certificate, VirusTotal (70+ AVs),
                                 pattern matching</div>
                         </div>
-                        <div class="arch-step__weight">30%</div>
+                        <div class="arch-step__weight">25%</div>
                     </div>
                     <div class="arch-step">
                         <div class="arch-step__num">3</div>
@@ -194,7 +240,7 @@
                             <div class="arch-step__desc">Headless Chromium via Playwright — visits URLs, captures
                                 screenshots, detects forms</div>
                         </div>
-                        <div class="arch-step__weight">—</div>
+                        <div class="arch-step__weight">10%</div>
                     </div>
                     <div class="arch-step">
                         <div class="arch-step__num">4</div>
@@ -203,7 +249,7 @@
                             <div class="arch-step__desc">Fake login page detection, brand impersonation (12+ brands),
                                 credential harvesting</div>
                         </div>
-                        <div class="arch-step__weight">25%</div>
+                        <div class="arch-step__weight">20%</div>
                     </div>
                     <div class="arch-step">
                         <div class="arch-step__num">5</div>

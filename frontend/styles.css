@@ -920,4 +920,223 @@ body {
   .arch-step {
     gap: 12px;
   }
+
+  .progress-stepper {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ---------- Progress Stepper ---------- */
+.progress-stepper {
+  display: none;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-top: 20px;
+  padding: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  animation: fadeUp 0.3s ease-out;
+}
+
+.progress-stepper.visible {
+  display: grid;
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  transition: var(--transition);
+  position: relative;
+}
+
+.progress-step.waiting {
+  opacity: 0.35;
+}
+
+.progress-step.running {
+  border-color: var(--accent);
+  background: var(--accent-subtle);
+  animation: stepPulse 1.5s ease-in-out infinite;
+}
+
+.progress-step.done {
+  border-color: rgba(0, 230, 118, 0.15);
+  opacity: 1;
+}
+
+.progress-step.skipped {
+  opacity: 0.25;
+}
+
+@keyframes stepPulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+  50% { box-shadow: 0 0 12px 4px var(--accent-glow); }
+}
+
+.progress-step__icon {
+  font-size: 1.3rem;
+}
+
+.progress-step__label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.progress-step__status {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  min-height: 14px;
+}
+
+.progress-step.running .progress-step__status { color: var(--accent); }
+.progress-step.done .progress-step__status { color: var(--safe); }
+.progress-step.skipped .progress-step__status { color: var(--text-muted); }
+
+/* ---------- Export Bar ---------- */
+.export-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.btn-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-export:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ---------- History Section ---------- */
+.history-section {
+  margin: 36px 0;
+}
+
+.history-list {
+  display: grid;
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.history-item:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.history-item__verdict {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 100px;
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+}
+
+.history-item__verdict.safe {
+  background: var(--safe-bg);
+  color: var(--safe);
+}
+
+.history-item__verdict.suspicious {
+  background: var(--suspicious-bg);
+  color: var(--suspicious);
+}
+
+.history-item__verdict.phishing {
+  background: var(--phishing-bg);
+  color: var(--phishing);
+}
+
+.history-item__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.history-item__text {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-item__meta {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.history-item__score {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.btn-clear-history {
+  margin-left: auto;
+  padding: 3px 12px;
+  background: transparent;
+  border: 1px solid rgba(255, 23, 68, 0.2);
+  border-radius: 100px;
+  color: var(--phishing);
+  font-family: var(--font);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-clear-history:hover {
+  background: var(--phishing-bg);
+}
+
+.history-empty {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
 }

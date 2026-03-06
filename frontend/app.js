@@ -22,6 +22,16 @@ const errorToast = $('#errorToast');
 const riskFactorsCard = $('#riskFactorsCard');
 const riskFactorsList = $('#riskFactorsList');
 
+// New feature refs
+const progressStepper = $('#progressStepper');
+const exportJsonBtn = $('#exportJsonBtn');
+const historySection = $('#historySection');
+const historyList = $('#historyList');
+const clearHistoryBtn = $('#clearHistoryBtn');
+
+// Store last analysis result for export
+let lastAnalysisResult = null;
+
 // Layer refs
 const layers = {
     text: { score: $('#textScore'), bar: $('#textBar'), flags: $('#textFlags') },
@@ -277,6 +287,166 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+// ---------- Progress Stepper ----------
+const stepIds = ['step-text', 'step-url', 'step-crawl', 'step-visual', 'step-links'];
+let progressCancelled = false;
+
+function resetProgress() {
+    progressCancelled = false;
+    stepIds.forEach(id => {
+        const el = document.getElementById(id);
+        el.className = 'progress-step waiting';
+        el.querySelector('.progress-step__status').textContent = '';
+    });
+}
+
+function setStepState(stepId, state, statusText) {
+    const el = document.getElementById(stepId);
+    el.className = `progress-step ${state}`;
+    el.querySelector('.progress-step__status').textContent = statusText || '';
+}
+
+async function animateProgress(crawlEnabled, screenshotsEnabled) {
+    resetProgress();
+    progressStepper.classList.add('visible');
+
+    // Step 1: Text
+    setStepState('step-text', 'running', 'Analyzing…');
+    await sleep(600);
+    if (progressCancelled) return;
+    setStepState('step-text', 'done', '✓ Done');
+
+    // Step 2: URL
+    setStepState('step-url', 'running', 'Checking…');
+    await sleep(500);
+    if (progressCancelled) return;
+    setStepState('step-url', 'done', '✓ Done');
+
+    // Step 3: Crawl
+    if (crawlEnabled) {
+        setStepState('step-crawl', 'running', 'Crawling…');
+        await sleep(800);
+        if (progressCancelled) return;
+        setStepState('step-crawl', 'done', '✓ Done');
+    } else {
+        setStepState('step-crawl', 'skipped', 'Skipped');
+    }
+
+    // Step 4: Visual
+    if (crawlEnabled && screenshotsEnabled) {
+        setStepState('step-visual', 'running', 'Scanning…');
+        await sleep(600);
+        if (progressCancelled) return;
+        setStepState('step-visual', 'done', '✓ Done');
+    } else {
+        setStepState('step-visual', 'skipped', 'Skipped');
+    }
+
+    // Step 5: Links
+    if (progressCancelled) return;
+    setStepState('step-links', 'running', 'Following…');
+}
+
+function finalizeProgress(data) {
+    // Cancel any in-flight animation so it stops overwriting
+    progressCancelled = true;
+
+    const layerMap = {
+        text_classification: 'step-text',
+        url_analysis: 'step-url',
+        web_crawling: 'step-crawl',
+        visual_analysis: 'step-visual',
+        link_checking: 'step-links'
+    };
+    stepIds.forEach(id => {
+        const found = Object.entries(layerMap).find(([, v]) => v === id);
+        if (found && data.analysis_layers.includes(found[0])) {
+            setStepState(id, 'done', '✓ Done');
+        } else {
+            setStepState(id, 'skipped', 'Skipped');
+        }
+    });
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ---------- History ----------
+const HISTORY_KEY = 'phishing_analysis_history';
+const MAX_HISTORY = 10;
+
+function loadHistory() {
+    try {
+        return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+    } catch { return []; }
+}
+
+function saveToHistory(inputText, subject, data) {
+    const history = loadHistory();
+    history.unshift({
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        inputPreview: (subject ? subject + ' — ' : '') + inputText.substring(0, 120),
+        verdict: data.overall_verdict,
+        riskScore: data.overall_risk_score,
+        layers: data.analysis_layers.length,
+        result: data
+    });
+    if (history.length > MAX_HISTORY) history.length = MAX_HISTORY;
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    renderHistory();
+}
+
+function renderHistory() {
+    const history = loadHistory();
+    if (history.length === 0) {
+        historySection.style.display = 'none';
+        return;
+    }
+    historySection.style.display = 'block';
+    historyList.innerHTML = history.map(h => {
+        const vc = verdictClass(h.verdict);
+        const time = new Date(h.timestamp).toLocaleString();
+        return `
+            <div class="history-item" data-id="${h.id}">
+                <span class="history-item__verdict ${vc}">${h.verdict}</span>
+                <div class="history-item__info">
+                    <div class="history-item__text">${escapeHtml(h.inputPreview)}</div>
+                    <div class="history-item__meta">${time} · ${h.layers} layers</div>
+                </div>
+                <span class="history-item__score score-${vc}">${(h.riskScore * 100).toFixed(0)}%</span>
+            </div>`;
+    }).join('');
+
+    // Click handler: re-render that result
+    historyList.querySelectorAll('.history-item').forEach(el => {
+        el.addEventListener('click', () => {
+            const id = parseInt(el.dataset.id);
+            const entry = history.find(h => h.id === id);
+            if (entry && entry.result) {
+                lastAnalysisResult = entry.result;
+                renderResults(entry.result);
+            }
+        });
+    });
+}
+
+function clearHistory() {
+    localStorage.removeItem(HISTORY_KEY);
+    renderHistory();
+}
+
+// ---------- Export JSON ----------
+function exportJson() {
+    if (!lastAnalysisResult) return;
+    const blob = new Blob([JSON.stringify(lastAnalysisResult, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `phishing-analysis-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
 // ---------- Analyze ----------
 async function analyze() {
     const text = emailInput.innerText.trim();
@@ -294,13 +464,18 @@ async function analyze() {
     analyzeBtn.disabled = true;
     resultsSection.classList.remove('visible');
 
+    // Start progress animation
+    const crawlOn = crawlToggle.checked;
+    const ssOn = screenshotToggle.checked;
+    animateProgress(crawlOn, ssOn);
+
     try {
         const body = {
             text,
             email_html: emailHtml,
             subject: subjectInput.value.trim() || null,
-            crawl_urls: crawlToggle.checked,
-            take_screenshots: screenshotToggle.checked,
+            crawl_urls: crawlOn,
+            take_screenshots: ssOn,
         };
 
         const res = await fetch(`${API_BASE}/deep-analyze`, {
@@ -315,11 +490,15 @@ async function analyze() {
         }
 
         const data = await res.json();
+        lastAnalysisResult = data;
+        finalizeProgress(data);
         renderResults(data);
+        saveToHistory(text, subjectInput.value.trim(), data);
 
     } catch (err) {
         showError(`Analysis failed: ${err.message}`);
         console.error('Deep-analyze error:', err);
+        progressStepper.classList.remove('visible');
     } finally {
         analyzeBtn.classList.remove('loading');
         analyzeBtn.disabled = false;
@@ -328,6 +507,8 @@ async function analyze() {
 
 // ---------- Event Listeners ----------
 analyzeBtn.addEventListener('click', analyze);
+exportJsonBtn.addEventListener('click', exportJson);
+clearHistoryBtn.addEventListener('click', clearHistory);
 
 // Screenshot toggle depends on crawl toggle
 crawlToggle.addEventListener('change', () => {
@@ -351,5 +532,5 @@ emailInput.addEventListener('keydown', (e) => {
 
 // ---------- Init ----------
 checkHealth();
-// Re-check health every 30 seconds
 setInterval(checkHealth, 30000);
+renderHistory();
