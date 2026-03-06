@@ -53,6 +53,33 @@
                     data-placeholder="Paste the full email text here…"></div>
             </div>
 
+            <!-- Sender Metadata (optional, for manual analysis) -->
+            <details class="sender-details" id="senderDetails">
+                <summary class="sender-summary">👤 Sender Info (optional)</summary>
+                <div class="sender-inputs">
+                    <div class="input-group input-group--half">
+                        <label for="senderEmail">From Email</label>
+                        <input type="text" id="senderEmail" placeholder="sender@example.com" />
+                    </div>
+                    <div class="input-group input-group--half">
+                        <label for="senderName">From Name</label>
+                        <input type="text" id="senderName" placeholder="Display name" />
+                    </div>
+                    <div class="input-group input-group--half">
+                        <label for="mailedBy">Mailed-by</label>
+                        <input type="text" id="mailedBy" placeholder="mailing domain" />
+                    </div>
+                    <div class="input-group input-group--half">
+                        <label for="signedBy">Signed-by</label>
+                        <input type="text" id="signedBy" placeholder="DKIM domain" />
+                    </div>
+                    <div class="input-group">
+                        <label for="securityInfo">Security</label>
+                        <input type="text" id="securityInfo" placeholder="e.g. Standard encryption (TLS)" />
+                    </div>
+                </div>
+            </details>
+
             <div class="options-row">
                 <label class="toggle-group">
                     <input type="checkbox" id="crawlToggle" checked />
@@ -135,6 +162,18 @@
                         <div class="layer-card__bar-fill" id="textBar"></div>
                     </div>
                     <ul class="layer-card__flags" id="textFlags"></ul>
+                </div>
+
+                <!-- Sender Analysis -->
+                <div class="card layer-card" id="layerSender" style="display:none;">
+                    <div class="layer-card__header">
+                        <span class="layer-card__name"><span class="layer-icon">👤</span> Sender</span>
+                        <span class="layer-card__score" id="senderScore">—</span>
+                    </div>
+                    <div class="layer-card__bar">
+                        <div class="layer-card__bar-fill" id="senderBar"></div>
+                    </div>
+                    <ul class="layer-card__flags" id="senderFlags"></ul>
                 </div>
 
                 <!-- Layer 2: URL Analysis -->

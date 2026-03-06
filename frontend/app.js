@@ -35,11 +35,19 @@ let lastAnalysisResult = null;
 // Layer refs
 const layers = {
     text: { score: $('#textScore'), bar: $('#textBar'), flags: $('#textFlags') },
+    sender: { score: $('#senderScore'), bar: $('#senderBar'), flags: $('#senderFlags'), card: $('#layerSender') },
     url: { score: $('#urlScore'), bar: $('#urlBar'), flags: $('#urlFlags') },
     crawl: { score: $('#crawlScore'), bar: $('#crawlBar'), flags: $('#crawlFlags') },
     visual: { score: $('#visualScore'), bar: $('#visualBar'), flags: $('#visualFlags') },
     links: { score: $('#linkScore'), bar: $('#linkBar'), flags: $('#linkFlags') },
 };
+
+// Sender input refs
+const senderEmailInput = $('#senderEmail');
+const senderNameInput = $('#senderName');
+const mailedByInput = $('#mailedBy');
+const signedByInput = $('#signedBy');
+const securityInput = $('#securityInfo');
 
 // ---------- Health Check ----------
 async function checkHealth() {
@@ -199,6 +207,16 @@ function renderResults(data) {
     textFlags.push(`Confidence: ${(textConf * 100).toFixed(1)}%`);
     textFlags.push(`Risk Level: ${data.text_analysis.risk_level}`);
     setLayerCard(layers.text, textRisk, textFlags);
+
+    // --- Sender Analysis ---
+    if (data.sender_analysis) {
+        layers.sender.card.style.display = 'block';
+        const sa = data.sender_analysis;
+        const senderFlags = sa.flags.length > 0 ? sa.flags : ['No sender issues detected'];
+        setLayerCard(layers.sender, sa.risk_score, senderFlags);
+    } else {
+        layers.sender.card.style.display = 'none';
+    }
 
     // --- Layer 2: URL ---
     if (data.url_analysis && data.url_analysis.results.length > 0) {
@@ -477,6 +495,18 @@ async function analyze() {
             crawl_urls: crawlOn,
             take_screenshots: ssOn,
         };
+
+        // Build sender_info if any field is filled
+        const se = senderEmailInput?.value?.trim();
+        if (se) {
+            body.sender_info = {
+                from_email: se || null,
+                from_name: senderNameInput?.value?.trim() || null,
+                mailed_by: mailedByInput?.value?.trim() || null,
+                signed_by: signedByInput?.value?.trim() || null,
+                security: securityInput?.value?.trim() || null,
+            };
+        }
 
         const res = await fetch(`${API_BASE}/deep-analyze`, {
             method: 'POST',

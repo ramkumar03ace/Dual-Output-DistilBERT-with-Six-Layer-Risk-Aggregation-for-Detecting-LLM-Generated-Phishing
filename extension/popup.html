@@ -29,6 +29,21 @@
         Extract from Gmail
       </button>
 
+      <!-- Sender Metadata (auto-filled on extract) -->
+      <details class="sender-info" id="senderInfoPanel" style="display:none;">
+        <summary class="section-title"><span class="icon">👤</span> Sender Info <span class="summary-arrow"></span></summary>
+        <div class="sender-grid">
+          <span class="sender-label">From</span>
+          <span class="sender-value" id="senderFrom">—</span>
+          <span class="sender-label">Mailed-by</span>
+          <span class="sender-value" id="senderMailedBy">—</span>
+          <span class="sender-label">Signed-by</span>
+          <span class="sender-value" id="senderSignedBy">—</span>
+          <span class="sender-label">Security</span>
+          <span class="sender-value" id="senderSecurity">—</span>
+        </div>
+      </details>
+
       <div class="or-divider"><span>or paste manually</span></div>
 
       <div class="input-group">
@@ -94,6 +109,18 @@
             <div class="layer-bar__fill" id="textBar"></div>
           </div>
           <ul class="layer-flags" id="textFlags"></ul>
+        </div>
+
+        <!-- Sender -->
+        <div class="layer-card" id="senderCard" style="display:none;">
+          <div class="layer-card__header">
+            <span class="layer-name"><span class="li">👤</span> Sender</span>
+            <span class="layer-score" id="senderScore">—</span>
+          </div>
+          <div class="layer-bar">
+            <div class="layer-bar__fill" id="senderBar"></div>
+          </div>
+          <ul class="layer-flags" id="senderFlags"></ul>
         </div>
 
         <!-- URL -->

@@ -1140,3 +1140,58 @@ body {
   color: var(--text-muted);
   font-size: 0.82rem;
 }
+
+/* ---------- Sender Details ---------- */
+.sender-details {
+  margin: 12px 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.sender-summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  list-style: none;
+}
+
+.sender-summary::-webkit-details-marker { display: none; }
+
+.sender-summary::before {
+  content: '▶';
+  font-size: 0.55rem;
+  transition: transform 0.2s;
+}
+
+.sender-details[open] .sender-summary::before {
+  transform: rotate(90deg);
+}
+
+.sender-summary:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--accent);
+}
+
+.sender-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.input-group--half {
+  margin-bottom: 0 !important;
+}
+
+.sender-inputs .input-group:last-child {
+  grid-column: 1 / -1;
+}

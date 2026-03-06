@@ -26,11 +26,22 @@ const riskFactorsList = $('#riskFactorsList');
 
 const layers = {
     text: { score: $('#textScore'), bar: $('#textBar'), flags: $('#textFlags') },
+    sender: { score: $('#senderScore'), bar: $('#senderBar'), flags: $('#senderFlags'), card: $('#senderCard') },
     url: { score: $('#urlScore'), bar: $('#urlBar'), flags: $('#urlFlags') },
     crawl: { score: $('#crawlScore'), bar: $('#crawlBar'), flags: $('#crawlFlags') },
     visual: { score: $('#visualScore'), bar: $('#visualBar'), flags: $('#visualFlags') },
     links: { score: $('#linkScore'), bar: $('#linkBar'), flags: $('#linkFlags') },
 };
+
+// Sender panel refs
+const senderInfoPanel = $('#senderInfoPanel');
+const senderFrom = $('#senderFrom');
+const senderMailedBy = $('#senderMailedBy');
+const senderSignedBy = $('#senderSignedBy');
+const senderSecurity = $('#senderSecurity');
+
+// Store extracted headers for sending to API
+let extractedHeaders = null;
 
 // ---------- Health Check ----------
 async function checkHealth() {
@@ -167,6 +178,7 @@ function renderResults(data) {
     // Layer badges
     const layerNames = {
         text_classification: '🧠 Text',
+        sender_analysis: '👤 Sender',
         url_analysis: '🔗 URL',
         web_crawling: '🕷️ Crawl',
         visual_analysis: '👁️ Visual',
@@ -185,6 +197,15 @@ function renderResults(data) {
         `Risk: ${data.text_analysis.risk_level}`,
     ];
     setLayerCard(layers.text, textRisk, textFlags);
+
+    // Sender Analysis
+    if (data.sender_analysis) {
+        layers.sender.card.style.display = 'block';
+        const sa = data.sender_analysis;
+        setLayerCard(layers.sender, sa.risk_score, sa.flags.length > 0 ? sa.flags : ['No sender issues detected']);
+    } else {
+        layers.sender.card.style.display = 'none';
+    }
 
     // Layer 2: URL
     if (data.url_analysis && data.url_analysis.results.length > 0) {
@@ -313,6 +334,20 @@ async function extractFromGmail() {
             if (response.subject) {
                 subjectInput.value = response.subject;
             }
+
+            // Display sender headers
+            if (response.headers) {
+                extractedHeaders = response.headers;
+                senderInfoPanel.style.display = 'block';
+                senderInfoPanel.open = false; // Collapse by default to save space
+                senderFrom.textContent = response.headers.from_email
+                    ? `${response.headers.from_name || ''} <${response.headers.from_email}>`.trim()
+                    : '—';
+                senderMailedBy.textContent = response.headers.mailed_by || '—';
+                senderSignedBy.textContent = response.headers.signed_by || '—';
+                senderSecurity.textContent = response.headers.security || '—';
+            }
+
             extractBtn.classList.add('success');
             extractBtn.querySelector('.btn-icon').textContent = '✅';
             setTimeout(() => {
@@ -359,6 +394,7 @@ async function analyze() {
             subject: subjectInput.value.trim() || null,
             crawl_urls: crawlToggle.checked,
             take_screenshots: screenshotToggle.checked,
+            sender_info: extractedHeaders || null,
         };
 
         const res = await fetch(`${API_BASE}/deep-analyze`, {

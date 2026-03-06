@@ -22,12 +22,14 @@ from models.schemas import (
     CrawlResultSchema,
     VisualAnalysisSchema,
     LinkCheckSchema,
+    SenderAnalysisSchema,
 )
 from analyzers.url_analyzer import url_analyzer
 from analyzers.email_parser import EmailParser
 from analyzers.web_crawler import web_crawler
 from analyzers.visual_analyzer import visual_analyzer
 from analyzers.link_checker import link_checker
+from analyzers.sender_analyzer import sender_analyzer
 from services.email_classifier import classifier
 from config import settings
 
@@ -76,6 +78,33 @@ async def deep_analysis(request: DeepAnalysisRequest):
         
         if is_phishing:
             risk_factors.append(f"Email text classified as phishing ({confidence:.1%} confidence)")
+        
+        # ==========================================
+        # SENDER ANALYSIS (when metadata provided)
+        # ==========================================
+        sender_schema = None
+        sender_risk = 0.0
+        
+        if request.sender_info:
+            si = request.sender_info
+            sender_result = sender_analyzer.analyze(
+                from_name=si.from_name,
+                from_email=si.from_email,
+                mailed_by=si.mailed_by,
+                signed_by=si.signed_by,
+                security=si.security,
+            )
+            sender_schema = SenderAnalysisSchema(
+                is_suspicious=sender_result.is_suspicious,
+                risk_score=round(sender_result.risk_score, 4),
+                flags=sender_result.flags,
+            )
+            sender_risk = sender_result.risk_score
+            
+            if sender_result.is_suspicious:
+                risk_factors.extend(sender_result.flags[:3])
+            
+            analysis_layers.append("sender_analysis")
         
         # ==========================================
         # LAYER 2: URL Static Analysis
@@ -249,6 +278,9 @@ async def deep_analysis(request: DeepAnalysisRequest):
         active_scores = {}
         active_scores["text"] = (text_risk, 0.15)
         
+        if sender_schema:
+            active_scores["sender"] = (sender_risk, 0.10)
+        
         if url_response:
             active_scores["url"] = (max_url_risk, 0.25)
         
@@ -276,6 +308,7 @@ async def deep_analysis(request: DeepAnalysisRequest):
         # Boost if multiple layers flag it (2+ layers = +0.15)
         flagging_layers = sum([
             is_phishing,
+            sender_risk >= 0.30 if sender_schema else False,
             max_url_risk >= 0.30 if url_response else False,
             crawl_risk >= 0.40 if crawl_schemas else False,
             max_visual_risk >= 0.40 if visual_schemas else False,
@@ -300,6 +333,7 @@ async def deep_analysis(request: DeepAnalysisRequest):
             crawl_results=crawl_schemas,
             visual_analysis=visual_schemas,
             link_analysis=link_schema,
+            sender_analysis=sender_schema,
             overall_verdict=verdict,
             overall_risk_score=round(combined_risk, 4),
             risk_factors=list(dict.fromkeys(risk_factors)),  # Deduplicate

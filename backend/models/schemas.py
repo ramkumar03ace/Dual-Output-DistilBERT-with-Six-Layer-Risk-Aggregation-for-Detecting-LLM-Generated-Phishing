@@ -152,13 +152,30 @@ class LinkCheckSchema(BaseModel):
     flags: List[str] = Field(default_factory=list, description="Suspicious indicators")
 
 
+class SenderInfo(BaseModel):
+    """Email sender metadata from headers."""
+    from_name: Optional[str] = Field(None, description="Sender display name")
+    from_email: Optional[str] = Field(None, description="Sender email address")
+    mailed_by: Optional[str] = Field(None, description="Mailed-by domain")
+    signed_by: Optional[str] = Field(None, description="DKIM signed-by domain")
+    security: Optional[str] = Field(None, description="Encryption/security info")
+
+
+class SenderAnalysisSchema(BaseModel):
+    """Result of sender metadata analysis."""
+    is_suspicious: bool = Field(False, description="Whether sender looks suspicious")
+    risk_score: float = Field(0.0, description="Sender risk score (0-1)")
+    flags: List[str] = Field(default_factory=list, description="Suspicious indicators")
+
+
 class DeepAnalysisRequest(BaseModel):
-    """Request for deep analysis (text + URL + crawl + visual)."""
+    """Request for deep analysis (text + URL + crawl + visual + sender)."""
     text: str = Field(..., description="Email body text", min_length=1)
     email_html: Optional[str] = Field(None, description="Raw HTML of email (for extracting links from images, buttons, etc.)")
     subject: Optional[str] = Field(None, description="Email subject line")
     crawl_urls: bool = Field(True, description="Whether to crawl URLs with browser")
     take_screenshots: bool = Field(True, description="Whether to capture screenshots")
+    sender_info: Optional[SenderInfo] = Field(None, description="Email sender metadata from headers")
 
 
 class DeepAnalysisResponse(BaseModel):
@@ -179,6 +196,9 @@ class DeepAnalysisResponse(BaseModel):
     
     # Layer 5: Link checking
     link_analysis: Optional[LinkCheckSchema] = Field(None, description="Link checking")
+    
+    # Sender analysis
+    sender_analysis: Optional[SenderAnalysisSchema] = Field(None, description="Sender metadata analysis")
     
     # Combined verdict
     overall_verdict: str = Field(..., description="SAFE, SUSPICIOUS, or PHISHING")
