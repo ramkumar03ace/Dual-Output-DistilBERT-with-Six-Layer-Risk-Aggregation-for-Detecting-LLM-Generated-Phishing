@@ -167,6 +167,13 @@ function renderResults(data) {
     resultsSection.classList.add('visible');
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+    // Reset screenshot section
+    const ssSection = document.getElementById('screenshotsSection');
+    const ssGallery = document.getElementById('screenshotsGallery');
+    ssSection.style.display = 'none';
+    ssGallery.innerHTML = '';
+
+
     // Verdict banner
     const vc = verdictClass(data.overall_verdict);
     verdictBanner.className = `verdict-banner ${vc}`;
@@ -282,6 +289,26 @@ function renderResults(data) {
             .join('');
     } else {
         riskFactorsCard.style.display = 'none';
+    }
+
+    // Screenshot Gallery (standalone section below cards)
+    const ssResults = (data.crawl_results || []).filter(c => c.screenshot_url && !c.error);
+    if (ssResults.length > 0) {
+        ssResults.forEach(c => {
+            const label = (c.page_title || (() => { try { return new URL(c.final_url || c.url).hostname; } catch { return c.url; } })() || c.url).substring(0, 28);
+            const thumb = document.createElement('a');
+            thumb.className = 'crawl-ss-thumb';
+            thumb.href = c.screenshot_url;
+            thumb.target = '_blank';
+            thumb.rel = 'noopener';
+            thumb.title = `Open screenshot: ${c.final_url || c.url}`;
+            thumb.innerHTML = `
+                <span class="crawl-ss-thumb-badge">🔍 View</span>
+                <img src="${escapeHtml(c.screenshot_url)}" alt="Screenshot" loading="lazy">
+                <div class="crawl-ss-thumb-label">${escapeHtml(label)}</div>`;
+            ssGallery.appendChild(thumb);
+        });
+        ssSection.style.display = 'block';
     }
 }
 

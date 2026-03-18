@@ -4,8 +4,10 @@ FastAPI backend for phishing email detection.
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import logging
+from pathlib import Path
 
 from config import settings
 from routers import email_router
@@ -73,6 +75,11 @@ app.add_middleware(
     allow_methods=settings.CORS_ALLOW_METHODS,
     allow_headers=settings.CORS_ALLOW_HEADERS,
 )
+
+# Serve screenshot images (for web crawl previews)
+SCREENSHOTS_DIR = Path(__file__).parent / "screenshots"
+SCREENSHOTS_DIR.mkdir(exist_ok=True)
+app.mount("/screenshots", StaticFiles(directory=str(SCREENSHOTS_DIR)), name="screenshots")
 
 # Include routers
 app.include_router(email_router.router)

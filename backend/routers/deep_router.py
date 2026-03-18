@@ -11,6 +11,7 @@ Pipeline:
 
 import asyncio
 import logging
+from pathlib import Path
 from fastapi import APIRouter, HTTPException
 
 from models.schemas import (
@@ -179,6 +180,12 @@ async def deep_analysis(request: DeepAnalysisRequest):
                         take_screenshot=request.take_screenshots
                     )
                     
+                    # Build screenshot URL if a screenshot was captured
+                    screenshot_url = None
+                    if crawl_result.screenshot_path:
+                        fname = Path(crawl_result.screenshot_path).name
+                        screenshot_url = f"http://localhost:8001/screenshots/{fname}"
+
                     crawl_schemas.append(CrawlResultSchema(
                         url=crawl_result.url,
                         final_url=crawl_result.final_url,
@@ -189,6 +196,7 @@ async def deep_analysis(request: DeepAnalysisRequest):
                         has_login_form=crawl_result.has_login_form,
                         has_password_field=crawl_result.has_password_field,
                         screenshot_path=crawl_result.screenshot_path,
+                        screenshot_url=screenshot_url,
                         error=crawl_result.error,
                     ))
                     

@@ -179,6 +179,12 @@ function renderResults(data) {
     resultsSection.classList.add('visible');
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+    // Reset screenshot section for fresh render
+    const ssSection = document.getElementById('screenshotsSection');
+    const ssGallery = document.getElementById('screenshotsGallery');
+    ssSection.style.display = 'none';
+    ssGallery.innerHTML = '';
+
     // Verdict banner
     const vc = verdictClass(data.overall_verdict);
     verdictBanner.className = `verdict-banner ${vc}`;
@@ -296,6 +302,23 @@ function renderResults(data) {
     } else {
         riskFactorsCard.style.display = 'none';
     }
+
+    // --- Screenshot Gallery (standalone section below cards) ---
+    const screenshotResults = (data.crawl_results || []).filter(c => c.screenshot_url && !c.error);
+    if (screenshotResults.length > 0) {
+        screenshotResults.forEach(c => {
+            const card = document.createElement('div');
+            card.className = 'crawl-screenshot-card';
+            const label = (c.page_title || (() => { try { return new URL(c.final_url || c.url).hostname; } catch { return c.url; } })() || c.url).substring(0, 40);
+            card.innerHTML = `
+                <span class="crawl-screenshot-hint">🔍 Preview</span>
+                <img src="${escapeHtml(c.screenshot_url)}" alt="Screenshot of ${escapeHtml(label)}" loading="lazy">
+                <div class="crawl-screenshot-label" title="${escapeHtml(c.final_url || c.url)}">${escapeHtml(label)}</div>`;
+            card.addEventListener('click', () => openLightbox(c.screenshot_url, c.final_url || c.url));
+            ssGallery.appendChild(card);
+        });
+        ssSection.style.display = 'block';
+    }
 }
 
 // ---------- HTML Escape ----------
@@ -304,6 +327,48 @@ function escapeHtml(str) {
     div.textContent = str;
     return div.innerHTML;
 }
+
+// ---------- Screenshot Lightbox ----------
+let lightboxEl = null;
+
+function getLightbox() {
+    if (lightboxEl) return lightboxEl;
+    lightboxEl = document.createElement('div');
+    lightboxEl.className = 'screenshot-lightbox';
+    lightboxEl.innerHTML = `
+        <div class="lightbox-inner">
+            <button class="lightbox-close" id="lightboxClose" title="Close">✕</button>
+            <img id="lightboxImg" src="" alt="Crawl Screenshot">
+            <div class="lightbox-caption" id="lightboxCaption"></div>
+            <a class="lightbox-open-btn" id="lightboxOpenBtn" href="" target="_blank" rel="noopener">🔗 Open in new tab</a>
+        </div>`;
+    document.body.appendChild(lightboxEl);
+
+    // Close on backdrop click
+    lightboxEl.addEventListener('click', (e) => {
+        if (e.target === lightboxEl) closeLightbox();
+    });
+    document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeLightbox();
+    });
+    return lightboxEl;
+}
+
+function openLightbox(imgSrc, caption) {
+    const lb = getLightbox();
+    document.getElementById('lightboxImg').src = imgSrc;
+    document.getElementById('lightboxCaption').textContent = caption || '';
+    document.getElementById('lightboxOpenBtn').href = imgSrc;
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    if (lightboxEl) lightboxEl.classList.remove('open');
+    document.body.style.overflow = '';
+}
+
 
 // ---------- Progress Stepper ----------
 const stepIds = ['step-text', 'step-url', 'step-crawl', 'step-visual', 'step-links'];

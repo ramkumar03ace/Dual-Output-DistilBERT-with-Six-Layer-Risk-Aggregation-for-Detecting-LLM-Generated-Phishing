@@ -131,7 +131,8 @@ class CrawlResultSchema(BaseModel):
     redirect_chain: List[str] = Field(default_factory=list, description="Redirect chain")
     has_login_form: bool = Field(False, description="Whether page has login form")
     has_password_field: bool = Field(False, description="Whether page has password field")
-    screenshot_path: Optional[str] = Field(None, description="Path to screenshot")
+    screenshot_path: Optional[str] = Field(None, description="Local path to screenshot file")
+    screenshot_url: Optional[str] = Field(None, description="HTTP URL to fetch the screenshot image")
     error: Optional[str] = Field(None, description="Error if crawl failed")
 
 
