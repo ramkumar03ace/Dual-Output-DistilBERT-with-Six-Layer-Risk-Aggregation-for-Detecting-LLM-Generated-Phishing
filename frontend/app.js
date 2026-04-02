@@ -196,6 +196,7 @@ function renderResults(data) {
     // Layer badges
     const layerNames = {
         text_classification: '🧠 Text',
+        sender_analysis: '👤 Sender',
         url_analysis: '🔗 URL',
         web_crawling: '🕷️ Crawl',
         visual_analysis: '👁️ Visual',
@@ -472,7 +473,16 @@ function saveToHistory(inputText, subject, data) {
         verdict: data.overall_verdict,
         riskScore: data.overall_risk_score,
         layers: data.analysis_layers.length,
-        result: data
+        // Store lightweight summary only — full result objects can be 50-200KB each
+        // which would exceed the ~5MB localStorage limit with MAX_HISTORY=10
+        summary: {
+            overall_verdict: data.overall_verdict,
+            overall_risk_score: data.overall_risk_score,
+            risk_factors: (data.risk_factors || []).slice(0, 5),
+            analysis_layers: data.analysis_layers,
+            urls_found: data.urls_found,
+            text_analysis: data.text_analysis,
+        }
     });
     if (history.length > MAX_HISTORY) history.length = MAX_HISTORY;
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
@@ -500,14 +510,14 @@ function renderHistory() {
             </div>`;
     }).join('');
 
-    // Click handler: re-render that result
+    // Click handler: re-render that result (summary view)
     historyList.querySelectorAll('.history-item').forEach(el => {
         el.addEventListener('click', () => {
             const id = parseInt(el.dataset.id);
             const entry = history.find(h => h.id === id);
-            if (entry && entry.result) {
-                lastAnalysisResult = entry.result;
-                renderResults(entry.result);
+            if (entry && entry.summary) {
+                lastAnalysisResult = entry.summary;
+                renderResults(entry.summary);
             }
         });
     });

@@ -251,7 +251,7 @@ async def deep_analysis(request: DeepAnalysisRequest):
         link_risk = 0.0
         
         if urls:
-            link_result = link_checker.check_links(urls)
+            link_result = await asyncio.to_thread(link_checker.check_links, urls)
             
             link_schema = LinkCheckSchema(
                 total_links=link_result.total_links,

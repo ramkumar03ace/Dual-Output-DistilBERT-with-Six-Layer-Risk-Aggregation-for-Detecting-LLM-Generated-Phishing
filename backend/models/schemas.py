@@ -3,7 +3,7 @@ Pydantic schemas for API request/response models.
 """
 
 from typing import Optional, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class EmailRequest(BaseModel):
@@ -74,6 +74,13 @@ class HealthResponse(BaseModel):
 class URLAnalysisRequest(BaseModel):
     """Request schema for URL analysis."""
     url: str = Field(..., description="URL to analyze", min_length=1)
+
+    @field_validator("url")
+    @classmethod
+    def validate_url_scheme(cls, v: str) -> str:
+        if not v.startswith(("http://", "https://")):
+            raise ValueError("URL must start with http:// or https://")
+        return v
 
 
 class URLResult(BaseModel):

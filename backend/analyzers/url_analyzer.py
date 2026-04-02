@@ -241,9 +241,10 @@ class URLAnalyzer:
             not_after = cert.get('notAfter')
             if not_after:
                 result.ssl_expiry = not_after
-                # Check if certificate is about to expire
+                # Check if certificate is about to expire (timezone-aware comparison)
                 expiry_date = datetime.strptime(not_after, '%b %d %H:%M:%S %Y %Z')
-                days_until_expiry = (expiry_date - datetime.utcnow()).days
+                expiry_aware = expiry_date.replace(tzinfo=timezone.utc)
+                days_until_expiry = (expiry_aware - datetime.now(timezone.utc)).days
                 if days_until_expiry < 7:
                     result.flags.append(f"SSL certificate expiring in {days_until_expiry} days")
                     

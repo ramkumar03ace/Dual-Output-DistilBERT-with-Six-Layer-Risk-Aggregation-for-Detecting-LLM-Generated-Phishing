@@ -128,19 +128,19 @@ def crawl(url: str, screenshot_dir: str, take_screenshot: bool = True) -> dict:
                         result["page_text"] = ""
                         
                 except Exception as e:
-                    pass  # Continue even if analysis fails
+                    logger.debug(f"Page analysis error for {url}: {e}")  # non-fatal
                 
                 # Screenshot
                 if take_screenshot:
                     try:
                         ss_dir = Path(screenshot_dir)
                         ss_dir.mkdir(exist_ok=True)
-                        screenshot_name = f"{uuid.uuid4().hex[:12]}.png"
+                        screenshot_name = f"{uuid.uuid4().hex}.png"
                         screenshot_path = ss_dir / screenshot_name
                         page.screenshot(path=str(screenshot_path), full_page=False)
                         result["screenshot_path"] = str(screenshot_path)
                     except Exception as ss_err:
-                        result["error"] = f"Screenshot failed: {ss_err}"
+                        result["screenshot_error"] = f"Screenshot failed: {ss_err}"
                         
             elif not result["error"]:
                 result["error"] = "Page failed to load (no response received)"

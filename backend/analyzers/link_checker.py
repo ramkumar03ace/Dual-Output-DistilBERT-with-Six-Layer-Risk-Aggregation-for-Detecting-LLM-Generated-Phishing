@@ -15,6 +15,10 @@ from dataclasses import dataclass, field
 from urllib.parse import urlparse, urljoin
 
 import requests
+import urllib3
+
+# Suppress InsecureRequestWarning from verify=False (intentional for phishing analysis)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logger = logging.getLogger(__name__)
 
@@ -112,6 +116,7 @@ class LinkChecker:
     def check_links(self, urls: List[str]) -> LinkCrawlResult:
         """
         Check multiple links with depth limiting.
+        Runs synchronously (must be called via asyncio.to_thread from async context).
         
         Args:
             urls: List of URLs to check

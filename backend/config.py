@@ -26,10 +26,18 @@ class Settings(BaseSettings):
     VIRUSTOTAL_API_KEY: str = ""  # Optional: set in .env for URL reputation checks
     
     # CORS Settings
-    CORS_ORIGINS: list = ["*"]
-    CORS_ALLOW_CREDENTIALS: bool = True
-    CORS_ALLOW_METHODS: list = ["*"]
-    CORS_ALLOW_HEADERS: list = ["*"]
+    # Note: allow_origins=["*"] + allow_credentials=True is invalid per CORS spec.
+    # Use explicit origins instead.
+    CORS_ORIGINS: list = [
+        "http://localhost:8001",
+        "http://127.0.0.1:8001",
+        "http://localhost:5500",
+        "http://127.0.0.1:5500",
+        "null",  # file:// origin for local HTML files
+    ]
+    CORS_ALLOW_CREDENTIALS: bool = False
+    CORS_ALLOW_METHODS: list = ["GET", "POST", "OPTIONS"]
+    CORS_ALLOW_HEADERS: list = ["Content-Type", "Authorization"]
     
     class Config:
         env_file = ".env"

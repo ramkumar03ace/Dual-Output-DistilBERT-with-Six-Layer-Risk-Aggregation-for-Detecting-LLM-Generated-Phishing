@@ -117,6 +117,6 @@ class EmailParser:
             body=text,
             subject=subject,
             sender=sender,
-            urls=list(set(urls)),
+            urls=urls,  # already deduplicated + ordered by extract_urls()
             has_html=has_html
         )
