@@ -106,9 +106,12 @@ Most phishing detectors catch traditional, human-written phishing emails. This p
 | 1 | `email_classifier.py` | 15% | Email text — urgency, threats, AI-generated patterns | DistilBERT (fine-tuned, 99.17%) |
 | 2 | `url_analyzer.py` | 25% | Domain age, SSL, VirusTotal reputation, suspicious patterns | python-whois + ssl + VirusTotal API |
 | 3 | `web_crawler.py` | 10% | Actually visits URLs in sandboxed browser, takes screenshots | Playwright Chromium (multiprocessing) |
-| 4 | `visual_analyzer.py` | 20% | Detects fake login pages, brand impersonation (12+ brands) | Heuristic rules (CNN planned) |
+| 4 | `visual_analyzer.py` | 20% | Detects fake login pages, brand impersonation (12+ brands) | Heuristic rules |
 | 5 | `link_checker.py` | 20% | Follows redirects, detects domain changes, URL shorteners | requests + redirect chain analysis |
-| — | `deep_router.py` | — | Combines all 5 layers into weighted risk score | Weighted aggregation + boost logic |
+| 6 | `header_analyzer.py` | 10% | SPF/DKIM/DMARC auth, Reply-To mismatch, Received chain hops | email.parser + dnspython |
+| — | `ai_authorship.py` | — | Detects AI-generated email text (perplexity, burstiness) | Statistical NLP (dual output scorer) |
+| — | `xai_explainer.py` | — | Token attribution + human-readable risk explanations | SHAP / LIME + DistilBERT attention |
+| — | `deep_router.py` | — | Combines all layers into weighted risk score | Weighted aggregation + boost logic |
 
 ---
 
@@ -169,7 +172,11 @@ Most phishing detectors catch traditional, human-written phishing emails. This p
 | Link Analysis | requests + redirect chain tracking | ✅ |
 | Frontend | HTML + CSS + JS (dark mode) | ✅ |
 | Chrome Extension | Manifest V3 (Gmail integration) | ✅ |
-| CNN Visual Model | ResNet/EfficientNet on screenshots | ⬜ Planned |
+| AI Authorship Detection | Statistical NLP (perplexity + burstiness) | ⬜ In Progress |
+| Explainable AI (XAI) | SHAP / LIME + DistilBERT attention weights | ⬜ In Progress |
+| Header Forensics | email.parser + dnspython (SPF/DKIM/DMARC) | ⬜ In Progress |
+| Adversarial Robustness | Evasion attack test suite | ⬜ In Progress |
+| Sender Reputation | SQLite reputation store + homoglyph scorer | ⬜ Planned |
 
 **Total Cost: ₹0**
 
@@ -205,14 +212,45 @@ Most phishing detectors catch traditional, human-written phishing emails. This p
 - [x] Rebalance scoring weights (Text 35%→15%, URL 20%→30%, Links 10%→20%)
 - [x] Testing and bug fixes
 
-### Week 5: CNN Visual Model & Final Integration 🔄 ← YOU ARE HERE
-- [ ] Collect screenshot dataset (phishing vs real login pages)
-- [ ] Train CNN model (ResNet/EfficientNet) on page screenshots
-- [ ] Replace heuristic visual analyzer with CNN-based detection
-- [ ] Integrate CNN predictions into `/deep-analyze` risk scoring
-- [ ] Final testing, documentation, and paper prep
+### Week 5: Advanced Layers, XAI & Paper Prep 🔄 ← YOU ARE HERE
 
+#### Priority 1 — AI-Generated Text Detection Layer (Highest novelty)
+- [ ] Implement perplexity scoring to distinguish AI-written vs human-written email text
+- [ ] Add burstiness detection (sentence length variance — humans vary more than LLMs)
+- [ ] Token frequency distribution analysis as an AI-authorship signal
+- [ ] Expose dual classification output: `is_phishing` + `is_ai_generated` (both scored 0–1)
+- [ ] Add `ai_authorship_score` to `/deep-analyze` response schema
+
+#### Priority 2 — Explainable AI (XAI) Dashboard
+- [ ] Integrate SHAP/LIME for token-level attribution on DistilBERT predictions
+- [ ] Surface attention weights to highlight the top phrases that triggered phishing classification
+- [ ] Add human-readable risk explanation to API response ("flagged because: urgency language + suspicious URL + new domain")
+- [ ] Render XAI attribution in the frontend dashboard (highlighted words)
+
+#### Priority 3 — Email Header Forensics Layer
+- [ ] Parse SPF / DKIM / DMARC authentication results from email headers
+- [ ] Detect Reply-To vs From mismatch
+- [ ] Analyze Received header chain for geolocation anomalies
+- [ ] Add header forensics as Layer 6 (~10% weight) in the weighted aggregator
+
+#### Priority 4 — Adversarial Robustness Testing
+- [ ] Test detection rate against homoglyph substitution attacks (`paypa1.com`)
+- [ ] Test against zero-width character injection in email body
+- [ ] Test against URL obfuscation (hex encoding, IP-based URLs, Unicode domains)
+- [ ] Test against prompt-style evasion in LLM-generated phishing text
+- [ ] Document detection rates before/after adversarial augmentation for paper
+
+#### Priority 5 — Sender Reputation & Behavioral Analysis
+- [ ] Build local reputation store (SQLite) for seen senders
+- [ ] First-time sender flagging and domain age correlation
+- [ ] Homoglyph domain similarity scoring against known brands
+- [ ] Email address entropy analysis
+
+#### Final
+- [ ] Re-tune weighted aggregator for 6-layer pipeline
+- [ ] Update test suite for new layers
 - [ ] Documentation & presentation prep
+- [ ] Paper draft (novel contributions: AI authorship detection + XAI + adversarial robustness)
 ---
 
 ## 📂 Project Structure
@@ -238,13 +276,17 @@ Hybrid-AI-Defense/
 │   │   ├── web_crawler.py      # Playwright crawler (subprocess)
 │   │   ├── crawl_worker.py     # Isolated crawl process
 │   │   ├── visual_analyzer.py  # Fake login page detection
-│   │   └── link_checker.py     # Recursive redirect analysis
+│   │   ├── link_checker.py     # Recursive redirect analysis
+│   │   ├── header_analyzer.py  # SPF/DKIM/DMARC + Received chain (Layer 6)
+│   │   └── sender_reputation.py# Homoglyph scoring + local reputation store
+│   ├── services/
+│   │   ├── email_classifier.py # DistilBERT model service
+│   │   ├── ai_authorship.py    # AI-generated text detector (perplexity + burstiness)
+│   │   └── xai_explainer.py    # SHAP/LIME token attribution + risk explanations
 │   ├── routers/
 │   │   ├── email_router.py     # /analyze endpoint
 │   │   ├── url_router.py       # /analyze-url, /full-analyze
 │   │   └── deep_router.py      # /deep-analyze (5-layer)
-│   ├── services/
-│   │   └── email_classifier.py # DistilBERT model service
 │   ├── models/
 │   │   └── schemas.py          # Pydantic request/response schemas
 │   ├── tests/                  # Pytest test suite
@@ -285,8 +327,12 @@ Hybrid-AI-Defense/
 4. **Chrome Extension** — Gmail integration for real-time scanning ✅
 5. **Test Suite** — Pytest tests for all API endpoints ✅
 6. **Documentation** — Error handling & architecture docs ✅
-7. **CNN Visual Model** — Screenshot-based fake login detection ⬜
-8. **Paper (Optional)** — Research paper for publication ⬜
+7. **AI Authorship Detector** — Dual classifier: is_phishing + is_ai_generated ⬜
+8. **Explainable AI (XAI)** — Token attribution + human-readable risk explanations ⬜
+9. **Header Forensics Layer** — SPF/DKIM/DMARC + Received chain analysis (Layer 6) ⬜
+10. **Adversarial Robustness Report** — Detection rates under evasion attacks ⬜
+11. **Sender Reputation Store** — Homoglyph scoring + behavioral profiling ⬜
+12. **Paper** — Research paper for ICCCNT / ICACCS / IJERT ⬜
 
 ---
 
@@ -298,11 +344,13 @@ Hybrid-AI-Defense/
 - IJERT / IRJET (Indian Journals)
 
 ### Novel Contributions
-1. Custom dataset of AI-generated phishing emails
-2. Multi-modal detection system (text + URL + visual)
-3. CNN-based fake login page detection from screenshots
-4. Recursive redirect chain analysis
-5. Focus on LLM-generated threats
+1. Custom dataset of AI-generated phishing emails (1,990 LLM-generated samples)
+2. Dual classification output — phishing detection + AI-authorship detection (simultaneous)
+3. Multi-modal 6-layer detection (text + URL + crawl + visual + links + header forensics)
+4. Explainable AI — token-level SHAP attribution for phishing classification decisions
+5. Adversarial robustness evaluation — detection rates under homoglyph, zero-width, and evasion attacks
+6. Recursive redirect chain analysis
+7. Focus on LLM-generated threats vs traditional human-written phishing (comparative analysis)
 
 ---
 
@@ -335,9 +383,9 @@ uvicorn main:app --reload --port 8001
 | POST | `/api/v1/analyze` | ML text classification only |
 | POST | `/api/v1/analyze-url` | URL static analysis (WHOIS, SSL, VT) |
 | POST | `/api/v1/full-analyze` | Text + URL analysis combined |
-| POST | `/api/v1/deep-analyze` | **Full 5-layer pipeline** (text + URL + crawl + visual + links) |
+| POST | `/api/v1/deep-analyze` | **Full 6-layer pipeline** (text + URL + crawl + visual + links + headers) |
 | GET | `/api/v1/health` | Health check |
 
 ---
 
-*Last Updated: March 6, 2026 — Fixed weight inconsistencies, added tests, frontend improvements, documentation*
+*Last Updated: April 2, 2026 — Replaced Week 5 CNN plan with AI authorship detection, XAI, header forensics, adversarial robustness testing, and sender reputation layers*
