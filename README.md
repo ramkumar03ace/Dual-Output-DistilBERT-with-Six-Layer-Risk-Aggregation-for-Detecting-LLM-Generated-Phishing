@@ -354,8 +354,9 @@ Hybrid-AI-Defense/
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Commands)
 
+### 1. Setup and Run Backend (Terminal 1)
 ```bash
 # Clone the repo
 git clone <repo-url>
@@ -372,9 +373,22 @@ playwright install chromium
 # Run backend
 uvicorn main:app --reload --port 8001
 
-# API docs available at:
-# http://localhost:8001/docs
+# API docs available at: http://localhost:8001/docs
 ```
+
+### 2. Run Frontend (Terminal 2)
+```bash
+# From the project root, start a simple HTTP server
+cd frontend
+python -m http.server 3000
+
+# Open in browser: http://localhost:3000
+```
+
+### 3. Load Chrome Extension
+1. Open Chrome and navigate to `chrome://extensions/`
+2. Enable **Developer mode** in the top right.
+3. Click **Load unpacked** and select the `/extension` folder from this repository.
 
 ### API Endpoints
 
