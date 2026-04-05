@@ -176,6 +176,18 @@ class SenderAnalysisSchema(BaseModel):
     flags: List[str] = Field(default_factory=list, description="Suspicious indicators")
 
 
+class AIAuthorshipSchema(BaseModel):
+    """Result of AI-authorship detection."""
+    is_ai_generated: bool = Field(False, description="Whether the text is likely AI-generated")
+    ai_authorship_score: float = Field(0.0, description="AI authorship probability (0=human, 1=AI)", ge=0, le=1)
+    signals: List[str] = Field(default_factory=list, description="Human-readable signals that triggered AI detection")
+    burstiness_score: float = Field(0.0, description="Low burstiness = AI-like uniform sentence structure (0-1)", ge=0, le=1)
+    perplexity_proxy: float = Field(0.0, description="Low entropy = predictable AI word choices (0-1)", ge=0, le=1)
+    vocabulary_richness: float = Field(0.0, description="Low TTR = limited lexical diversity, AI-like (0-1)", ge=0, le=1)
+    repetition_score: float = Field(0.0, description="High bigram repetition = AI-like (0-1)", ge=0, le=1)
+    formality_score: float = Field(0.0, description="High formal/AI discourse marker density (0-1)", ge=0, le=1)
+
+
 class DeepAnalysisRequest(BaseModel):
     """Request for deep analysis (text + URL + crawl + visual + sender)."""
     text: str = Field(..., description="Email body text", min_length=1)
@@ -207,10 +219,15 @@ class DeepAnalysisResponse(BaseModel):
     
     # Sender analysis
     sender_analysis: Optional[SenderAnalysisSchema] = Field(None, description="Sender metadata analysis")
-    
+
+    # AI authorship detection (dual classifier output)
+    ai_authorship: Optional[AIAuthorshipSchema] = Field(None, description="AI-generated text detection result")
+
     # Combined verdict
     overall_verdict: str = Field(..., description="SAFE, SUSPICIOUS, or PHISHING")
     overall_risk_score: float = Field(..., description="Combined risk score (0-1)")
+    is_ai_generated: bool = Field(False, description="Whether email text is likely AI-generated")
+    ai_authorship_score: float = Field(0.0, description="AI authorship probability (0=human, 1=AI)", ge=0, le=1)
     risk_factors: List[str] = Field(default_factory=list, description="Key risk factors")
     analysis_layers: List[str] = Field(default_factory=list, description="Layers that ran")
 

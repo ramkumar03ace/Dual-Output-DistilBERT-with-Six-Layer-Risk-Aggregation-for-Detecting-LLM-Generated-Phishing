@@ -7,6 +7,7 @@ Pipeline:
 3. Web crawling (Playwright headless browser + screenshots)
 4. Visual analysis (fake login page detection)
 5. Recursive link checking (redirects, domain changes)
+6. AI authorship detection (perplexity, burstiness, vocabulary, repetition)
 """
 
 import asyncio
@@ -24,6 +25,7 @@ from models.schemas import (
     VisualAnalysisSchema,
     LinkCheckSchema,
     SenderAnalysisSchema,
+    AIAuthorshipSchema,
 )
 from analyzers.url_analyzer import url_analyzer
 from analyzers.email_parser import EmailParser
@@ -32,6 +34,7 @@ from analyzers.visual_analyzer import visual_analyzer
 from analyzers.link_checker import link_checker
 from analyzers.sender_analyzer import sender_analyzer
 from services.email_classifier import classifier
+from services.ai_authorship import ai_authorship_detector
 from config import settings
 
 logger = logging.getLogger(__name__)
@@ -245,6 +248,29 @@ async def deep_analysis(request: DeepAnalysisRequest):
                     crawl_risk = max(crawl_risk, 0.3)
         
         # ==========================================
+        # AI AUTHORSHIP DETECTION (runs on all requests)
+        # ==========================================
+        ai_result = await asyncio.to_thread(
+            ai_authorship_detector.analyze, request.text, request.subject
+        )
+        ai_schema = AIAuthorshipSchema(
+            is_ai_generated=ai_result.is_ai_generated,
+            ai_authorship_score=round(ai_result.ai_authorship_score, 4),
+            signals=ai_result.signals,
+            burstiness_score=ai_result.burstiness_score,
+            perplexity_proxy=ai_result.perplexity_proxy,
+            vocabulary_richness=ai_result.vocabulary_richness,
+            repetition_score=ai_result.repetition_score,
+            formality_score=ai_result.formality_score,
+        )
+        analysis_layers.append("ai_authorship_detection")
+
+        if ai_result.is_ai_generated:
+            risk_factors.append(
+                f"Email text likely AI-generated (score: {ai_result.ai_authorship_score:.0%})"
+            )
+
+        # ==========================================
         # LAYER 5: Link Checking
         # ==========================================
         link_schema = None
@@ -342,8 +368,11 @@ async def deep_analysis(request: DeepAnalysisRequest):
             visual_analysis=visual_schemas,
             link_analysis=link_schema,
             sender_analysis=sender_schema,
+            ai_authorship=ai_schema,
             overall_verdict=verdict,
             overall_risk_score=round(combined_risk, 4),
+            is_ai_generated=ai_result.is_ai_generated,
+            ai_authorship_score=round(ai_result.ai_authorship_score, 4),
             risk_factors=list(dict.fromkeys(risk_factors)),  # Deduplicate
             analysis_layers=analysis_layers,
         )

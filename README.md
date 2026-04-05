@@ -172,7 +172,7 @@ Most phishing detectors catch traditional, human-written phishing emails. This p
 | Link Analysis | requests + redirect chain tracking | ✅ |
 | Frontend | HTML + CSS + JS (dark mode) | ✅ |
 | Chrome Extension | Manifest V3 (Gmail integration) | ✅ |
-| AI Authorship Detection | Statistical NLP (perplexity + burstiness) | ⬜ In Progress |
+| AI Authorship Detection | Statistical NLP (perplexity + burstiness) | ✅ |
 | Explainable AI (XAI) | SHAP / LIME + DistilBERT attention weights | ⬜ In Progress |
 | Header Forensics | email.parser + dnspython (SPF/DKIM/DMARC) | ⬜ In Progress |
 | Adversarial Robustness | Evasion attack test suite | ⬜ In Progress |
@@ -214,12 +214,12 @@ Most phishing detectors catch traditional, human-written phishing emails. This p
 
 ### Week 5: Advanced Layers, XAI & Paper Prep 🔄 ← YOU ARE HERE
 
-#### Priority 1 — AI-Generated Text Detection Layer (Highest novelty)
-- [ ] Implement perplexity scoring to distinguish AI-written vs human-written email text
-- [ ] Add burstiness detection (sentence length variance — humans vary more than LLMs)
-- [ ] Token frequency distribution analysis as an AI-authorship signal
-- [ ] Expose dual classification output: `is_phishing` + `is_ai_generated` (both scored 0–1)
-- [ ] Add `ai_authorship_score` to `/deep-analyze` response schema
+#### Priority 1 — AI-Generated Text Detection Layer (Highest novelty) ✅
+- [x] Implement perplexity scoring to distinguish AI-written vs human-written email text
+- [x] Add burstiness detection (sentence length variance — humans vary more than LLMs)
+- [x] Token frequency distribution analysis as an AI-authorship signal
+- [x] Expose dual classification output: `is_phishing` + `is_ai_generated` (both scored 0–1)
+- [x] Add `ai_authorship_score` to `/deep-analyze` response schema
 
 #### Priority 2 — Explainable AI (XAI) Dashboard
 - [ ] Integrate SHAP/LIME for token-level attribution on DistilBERT predictions
@@ -327,7 +327,7 @@ Hybrid-AI-Defense/
 4. **Chrome Extension** — Gmail integration for real-time scanning ✅
 5. **Test Suite** — Pytest tests for all API endpoints ✅
 6. **Documentation** — Error handling & architecture docs ✅
-7. **AI Authorship Detector** — Dual classifier: is_phishing + is_ai_generated ⬜
+7. **AI Authorship Detector** — Dual classifier: is_phishing + is_ai_generated ✅
 8. **Explainable AI (XAI)** — Token attribution + human-readable risk explanations ⬜
 9. **Header Forensics Layer** — SPF/DKIM/DMARC + Received chain analysis (Layer 6) ⬜
 10. **Adversarial Robustness Report** — Detection rates under evasion attacks ⬜
@@ -388,4 +388,4 @@ uvicorn main:app --reload --port 8001
 
 ---
 
-*Last Updated: April 2, 2026 — Replaced Week 5 CNN plan with AI authorship detection, XAI, header forensics, adversarial robustness testing, and sender reputation layers*
+*Last Updated: April 5, 2026 — Added AI authorship detection layer (burstiness, perplexity proxy, vocabulary richness, bigram repetition, formality scoring); dual output is_phishing + is_ai_generated now live in /deep-analyze*
