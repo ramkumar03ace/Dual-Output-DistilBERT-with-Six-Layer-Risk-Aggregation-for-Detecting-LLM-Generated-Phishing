@@ -30,8 +30,8 @@
                 Hybrid <span class="accent">AI Defense</span>
             </h1>
             <p class="header__sub">
-                Paste an email below to run a 5-layer deep analysis — NLP, URL intelligence, web crawling, visual
-                detection, and link checking.
+                Paste an email below to run a deep analysis — NLP, URL intelligence, web crawling, visual
+                detection, link checking, and AI authorship detection.
             </p>
             <div id="statusChip" class="status-chip status-chip--loading">
                 Checking API…
@@ -123,6 +123,11 @@
                     <div class="progress-step__label">Link Checking</div>
                     <div class="progress-step__status"></div>
                 </div>
+                <div class="progress-step" id="step-ai" data-step="6">
+                    <div class="progress-step__icon">🤖</div>
+                    <div class="progress-step__label">AI Authorship</div>
+                    <div class="progress-step__status"></div>
+                </div>
             </div>
         </section>
 
@@ -148,6 +153,62 @@
                     <div class="verdict-info__verdict" id="verdictText">—</div>
                     <div class="verdict-info__layers" id="layersBadges"></div>
                 </div>
+            </div>
+
+            <!-- AI Authorship Banner (shown only when ai_authorship data exists) -->
+            <div class="ai-authorship-banner card" id="aiAuthorshipBanner" style="display:none;">
+                <div class="ai-authorship-banner__header">
+                    <div class="ai-authorship-banner__left">
+                        <div class="ai-authorship-banner__icon" id="aiIcon">🤖</div>
+                        <div>
+                            <div class="ai-authorship-banner__title" id="aiTitle">AI Authorship Detection</div>
+                            <div class="ai-authorship-banner__subtitle" id="aiSubtitle">Analysing writing patterns…</div>
+                        </div>
+                    </div>
+                    <div class="ai-authorship-banner__right">
+                        <div class="ai-score-ring" id="aiScoreRing">
+                            <svg viewBox="0 0 60 60">
+                                <circle class="ai-ring-bg" cx="30" cy="30" r="24"/>
+                                <circle class="ai-ring-fill" id="aiRingFill" cx="30" cy="30" r="24"
+                                    stroke-dasharray="150.8" stroke-dashoffset="150.8"/>
+                            </svg>
+                            <div class="ai-score-ring__label" id="aiScoreLabel">0%</div>
+                        </div>
+                        <div class="ai-verdict-pill" id="aiVerdictPill">—</div>
+                    </div>
+                </div>
+
+                <!-- Signal bars -->
+                <div class="ai-signals" id="aiSignals">
+                    <div class="ai-signal-row">
+                        <span class="ai-signal-name" title="Low sentence-length variance → AI-like">Burstiness</span>
+                        <div class="ai-signal-bar-wrap"><div class="ai-signal-bar" id="sigBurstiness"></div></div>
+                        <span class="ai-signal-val" id="sigBurstinessVal">—</span>
+                    </div>
+                    <div class="ai-signal-row">
+                        <span class="ai-signal-name" title="Low word entropy → predictable AI text">Perplexity Proxy</span>
+                        <div class="ai-signal-bar-wrap"><div class="ai-signal-bar" id="sigPerplexity"></div></div>
+                        <span class="ai-signal-val" id="sigPerplexityVal">—</span>
+                    </div>
+                    <div class="ai-signal-row">
+                        <span class="ai-signal-name" title="Low type-token ratio → limited lexical diversity">Vocab Richness</span>
+                        <div class="ai-signal-bar-wrap"><div class="ai-signal-bar" id="sigVocab"></div></div>
+                        <span class="ai-signal-val" id="sigVocabVal">—</span>
+                    </div>
+                    <div class="ai-signal-row">
+                        <span class="ai-signal-name" title="High bigram repetition → AI phrase patterns">Repetition</span>
+                        <div class="ai-signal-bar-wrap"><div class="ai-signal-bar" id="sigRepetition"></div></div>
+                        <span class="ai-signal-val" id="sigRepetitionVal">—</span>
+                    </div>
+                    <div class="ai-signal-row">
+                        <span class="ai-signal-name" title="Dense AI discourse markers (kindly, rest assured…)">Formality</span>
+                        <div class="ai-signal-bar-wrap"><div class="ai-signal-bar" id="sigFormality"></div></div>
+                        <span class="ai-signal-val" id="sigFormalityVal">—</span>
+                    </div>
+                </div>
+
+                <!-- Triggered signals list -->
+                <ul class="ai-signal-notes" id="aiSignalNotes"></ul>
             </div>
 
             <!-- Layer Grid -->
@@ -304,6 +365,15 @@
                                 expansion</div>
                         </div>
                         <div class="arch-step__weight">20%</div>
+                    </div>
+                    <div class="arch-step arch-step--ai">
+                        <div class="arch-step__num">AI</div>
+                        <div class="arch-step__info">
+                            <div class="arch-step__name">AI Authorship Detection</div>
+                            <div class="arch-step__desc">Burstiness, perplexity proxy, vocabulary richness, bigram
+                                repetition, formality markers — dual output: is_phishing + is_ai_generated</div>
+                        </div>
+                        <div class="arch-step__weight arch-step__weight--ai">NEW</div>
                     </div>
                 </div>
             </div>

@@ -42,6 +42,25 @@ const layers = {
     links: { score: $('#linkScore'), bar: $('#linkBar'), flags: $('#linkFlags') },
 };
 
+// AI authorship refs
+const aiAuthorshipBanner = $('#aiAuthorshipBanner');
+const aiIcon = $('#aiIcon');
+const aiTitle = $('#aiTitle');
+const aiSubtitle = $('#aiSubtitle');
+const aiRingFill = $('#aiRingFill');
+const aiScoreLabel = $('#aiScoreLabel');
+const aiVerdictPill = $('#aiVerdictPill');
+const aiSignalNotes = $('#aiSignalNotes');
+const AI_RING_CIRCUMFERENCE = 2 * Math.PI * 24; // r=24
+
+const aiSignalEls = {
+    burstiness:  { bar: $('#sigBurstiness'),  val: $('#sigBurstinessVal')  },
+    perplexity:  { bar: $('#sigPerplexity'),   val: $('#sigPerplexityVal')  },
+    vocab:       { bar: $('#sigVocab'),        val: $('#sigVocabVal')       },
+    repetition:  { bar: $('#sigRepetition'),   val: $('#sigRepetitionVal')  },
+    formality:   { bar: $('#sigFormality'),    val: $('#sigFormalityVal')   },
+};
+
 // Sender input refs
 const senderEmailInput = $('#senderEmail');
 const senderNameInput = $('#senderName');
@@ -195,12 +214,13 @@ function renderResults(data) {
 
     // Layer badges
     const layerNames = {
-        text_classification: '🧠 Text',
-        sender_analysis: '👤 Sender',
-        url_analysis: '🔗 URL',
-        web_crawling: '🕷️ Crawl',
-        visual_analysis: '👁️ Visual',
-        link_checking: '🔀 Links',
+        text_classification:    '🧠 Text',
+        sender_analysis:        '👤 Sender',
+        url_analysis:           '🔗 URL',
+        web_crawling:           '🕷️ Crawl',
+        visual_analysis:        '👁️ Visual',
+        link_checking:          '🔀 Links',
+        ai_authorship_detection:'🤖 AI Author',
     };
     layersBadges.innerHTML = (data.analysis_layers || [])
         .map(l => `<span>${layerNames[l] || l}</span>`)
@@ -294,6 +314,9 @@ function renderResults(data) {
         resetLayerCard(layers.links);
     }
 
+    // --- AI Authorship ---
+    renderAIAuthorship(data.ai_authorship || null);
+
     // --- Risk Factors ---
     if (data.risk_factors && data.risk_factors.length > 0) {
         riskFactorsCard.style.display = 'block';
@@ -320,6 +343,74 @@ function renderResults(data) {
         });
         ssSection.style.display = 'block';
     }
+}
+
+// ---------- AI Authorship Rendering ----------
+function renderAIAuthorship(ai) {
+    if (!ai) {
+        aiAuthorshipBanner.style.display = 'none';
+        return;
+    }
+
+    aiAuthorshipBanner.style.display = 'block';
+
+    const score = ai.ai_authorship_score;
+    const isAI = ai.is_ai_generated;
+
+    // Ring
+    const offset = AI_RING_CIRCUMFERENCE * (1 - score);
+    aiRingFill.style.strokeDashoffset = offset;
+    aiRingFill.style.stroke = isAI ? '#ff1744' : '#00e676';
+
+    // Animate score number
+    animateNumber(aiScoreLabel, score);
+
+    // Verdict pill
+    if (isAI) {
+        aiVerdictPill.textContent = '🤖 AI-Generated';
+        aiVerdictPill.className = 'ai-verdict-pill ai-verdict-pill--ai';
+        aiIcon.textContent = '🤖';
+        aiTitle.textContent = 'AI-Generated Email Detected';
+        aiSubtitle.textContent = `Authorship score ${(score * 100).toFixed(0)}% — statistical signals indicate LLM-generated text`;
+        aiAuthorshipBanner.className = 'ai-authorship-banner card ai-banner--ai';
+    } else {
+        aiVerdictPill.textContent = '✍️ Human-Written';
+        aiVerdictPill.className = 'ai-verdict-pill ai-verdict-pill--human';
+        aiIcon.textContent = '✍️';
+        aiTitle.textContent = 'Human-Written Email';
+        aiSubtitle.textContent = `Authorship score ${(score * 100).toFixed(0)}% — writing patterns consistent with human authorship`;
+        aiAuthorshipBanner.className = 'ai-authorship-banner card ai-banner--human';
+    }
+
+    // Signal bars
+    function setSignalBar(key, value) {
+        const el = aiSignalEls[key];
+        if (!el) return;
+        const pct = Math.round(value * 100);
+        el.val.textContent = pct + '%';
+        requestAnimationFrame(() => {
+            el.bar.style.width = Math.max(pct, 2) + '%';
+            el.bar.style.background = value >= 0.6
+                ? 'var(--phishing)'
+                : value >= 0.4
+                    ? 'var(--suspicious)'
+                    : 'var(--safe)';
+        });
+    }
+
+    setSignalBar('burstiness', ai.burstiness_score);
+    setSignalBar('perplexity',  ai.perplexity_proxy);
+    setSignalBar('vocab',       ai.vocabulary_richness);
+    setSignalBar('repetition',  ai.repetition_score);
+    setSignalBar('formality',   ai.formality_score);
+
+    // Signal notes
+    aiSignalNotes.innerHTML = '';
+    (ai.signals || []).forEach(s => {
+        const li = document.createElement('li');
+        li.textContent = s;
+        aiSignalNotes.appendChild(li);
+    });
 }
 
 // ---------- HTML Escape ----------
@@ -372,7 +463,7 @@ function closeLightbox() {
 
 
 // ---------- Progress Stepper ----------
-const stepIds = ['step-text', 'step-url', 'step-crawl', 'step-visual', 'step-links'];
+const stepIds = ['step-text', 'step-url', 'step-crawl', 'step-visual', 'step-links', 'step-ai'];
 let progressCancelled = false;
 
 function resetProgress() {
@@ -427,8 +518,13 @@ async function animateProgress(crawlEnabled, screenshotsEnabled) {
     }
 
     // Step 5: Links
-    if (progressCancelled) return;
     setStepState('step-links', 'running', 'Following…');
+    await sleep(500);
+    if (progressCancelled) return;
+    setStepState('step-links', 'done', '✓ Done');
+
+    // Step 6: AI Authorship
+    setStepState('step-ai', 'running', 'Detecting…');
 }
 
 function finalizeProgress(data) {
@@ -436,11 +532,12 @@ function finalizeProgress(data) {
     progressCancelled = true;
 
     const layerMap = {
-        text_classification: 'step-text',
-        url_analysis: 'step-url',
-        web_crawling: 'step-crawl',
-        visual_analysis: 'step-visual',
-        link_checking: 'step-links'
+        text_classification:     'step-text',
+        url_analysis:            'step-url',
+        web_crawling:            'step-crawl',
+        visual_analysis:         'step-visual',
+        link_checking:           'step-links',
+        ai_authorship_detection: 'step-ai',
     };
     stepIds.forEach(id => {
         const found = Object.entries(layerMap).find(([, v]) => v === id);
