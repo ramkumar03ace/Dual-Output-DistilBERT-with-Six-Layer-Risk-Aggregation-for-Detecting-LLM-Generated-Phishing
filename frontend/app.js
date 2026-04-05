@@ -220,7 +220,7 @@ function renderResults(data) {
         web_crawling:           '🕷️ Crawl',
         visual_analysis:        '👁️ Visual',
         link_checking:          '🔀 Links',
-        ai_authorship_detection:'🤖 AI Author',
+        ai_authorship_detection:'🤖 AI Authorship',
     };
     layersBadges.innerHTML = (data.analysis_layers || [])
         .map(l => `<span>${layerNames[l] || l}</span>`)
@@ -539,9 +539,18 @@ function finalizeProgress(data) {
         link_checking:           'step-links',
         ai_authorship_detection: 'step-ai',
     };
+
+    const layers = data.analysis_layers || [];
+
     stepIds.forEach(id => {
-        const found = Object.entries(layerMap).find(([, v]) => v === id);
-        if (found && data.analysis_layers.includes(found[0])) {
+        const entry = Object.entries(layerMap).find(([, v]) => v === id);
+        if (!entry) { setStepState(id, 'skipped', 'Skipped'); return; }
+        const [layerKey] = entry;
+        // ai_authorship always runs — mark done if data has the field or layer key present
+        if (layerKey === 'ai_authorship_detection') {
+            const ran = layers.includes(layerKey) || data.ai_authorship != null;
+            setStepState(id, ran ? 'done' : 'skipped', ran ? '✓ Done' : 'Skipped');
+        } else if (layers.includes(layerKey)) {
             setStepState(id, 'done', '✓ Done');
         } else {
             setStepState(id, 'skipped', 'Skipped');
