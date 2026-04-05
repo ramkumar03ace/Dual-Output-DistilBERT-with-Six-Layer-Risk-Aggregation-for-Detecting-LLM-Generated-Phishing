@@ -213,17 +213,17 @@ function renderResults(data) {
     setGauge(data.overall_risk_score, data.overall_verdict);
 
     // Layer badges
-    const layerNames = {
-        text_classification:    '🧠 Text',
-        sender_analysis:        '👤 Sender',
-        url_analysis:           '🔗 URL',
-        web_crawling:           '🕷️ Crawl',
-        visual_analysis:        '👁️ Visual',
-        link_checking:          '🔀 Links',
-        ai_authorship_detection:'🤖 AI Authorship',
-    };
+    const layerNames = new Map([
+        ['text_classification',    '🧠 Text'],
+        ['sender_analysis',        '👤 Sender'],
+        ['url_analysis',           '🔗 URL'],
+        ['web_crawling',           '🕷️ Crawl'],
+        ['visual_analysis',        '👁️ Visual'],
+        ['link_checking',          '🔀 Links'],
+        ['ai_authorship_detection','🤖 AI Authorship'],
+    ]);
     layersBadges.innerHTML = (data.analysis_layers || [])
-        .map(l => `<span>${layerNames[l] || l}</span>`)
+        .map(l => `<span>${layerNames.get(l) || l}</span>`)
         .join('');
 
     // --- Layer 1: Text ---
@@ -546,10 +546,9 @@ function finalizeProgress(data) {
         const entry = Object.entries(layerMap).find(([, v]) => v === id);
         if (!entry) { setStepState(id, 'skipped', 'Skipped'); return; }
         const [layerKey] = entry;
-        // ai_authorship always runs — mark done if data has the field or layer key present
+        // ai_authorship always runs (no URLs needed) — always mark done
         if (layerKey === 'ai_authorship_detection') {
-            const ran = layers.includes(layerKey) || data.ai_authorship != null;
-            setStepState(id, ran ? 'done' : 'skipped', ran ? '✓ Done' : 'Skipped');
+            setStepState(id, 'done', '✓ Done');
         } else if (layers.includes(layerKey)) {
             setStepState(id, 'done', '✓ Done');
         } else {
