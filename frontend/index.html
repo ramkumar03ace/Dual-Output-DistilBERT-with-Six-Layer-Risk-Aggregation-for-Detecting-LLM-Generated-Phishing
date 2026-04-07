@@ -128,6 +128,11 @@
                     <div class="progress-step__label">AI Authorship</div>
                     <div class="progress-step__status"></div>
                 </div>
+                <div class="progress-step" id="step-xai" data-step="7">
+                    <div class="progress-step__icon">🔍</div>
+                    <div class="progress-step__label">XAI</div>
+                    <div class="progress-step__status"></div>
+                </div>
             </div>
         </section>
 
@@ -209,6 +214,44 @@
 
                 <!-- Triggered signals list -->
                 <ul class="ai-signal-notes" id="aiSignalNotes"></ul>
+            </div>
+
+            <!-- XAI Explanation Panel -->
+            <div class="xai-panel card" id="xaiPanel" style="display:none;">
+                <div class="card__title"><span class="icon">🔍</span> Explainable AI (XAI) — Why was this flagged?</div>
+
+                <!-- Summary one-liner -->
+                <div class="xai-summary" id="xaiSummary"></div>
+
+                <!-- Risk category pills -->
+                <div class="xai-categories" id="xaiCategories"></div>
+
+                <!-- Token attribution view -->
+                <div class="xai-token-section">
+                    <div class="xai-token-label">Token Attribution <span class="xai-token-hint">(highlighted words drove the classification)</span></div>
+                    <div class="xai-token-view" id="xaiTokenView"></div>
+                    <!-- Legend -->
+                    <div class="xai-legend">
+                        <span class="xai-legend-item"><span class="xai-tok xai-tok--high">word</span> High influence</span>
+                        <span class="xai-legend-item"><span class="xai-tok xai-tok--mid">word</span> Medium</span>
+                        <span class="xai-legend-item"><span class="xai-tok xai-tok--low">word</span> Low</span>
+                    </div>
+                </div>
+
+                <!-- Top tokens bar chart -->
+                <div class="xai-top-tokens" id="xaiTopTokens" style="display:none;">
+                    <div class="xai-token-label">Top Influential Tokens</div>
+                    <div class="xai-bars" id="xaiBars"></div>
+                </div>
+
+                <!-- LOO delta -->
+                <div class="xai-loo" id="xaiLoo" style="display:none;">
+                    <span class="xai-loo-label">Removing top token drops phishing confidence by</span>
+                    <span class="xai-loo-delta" id="xaiLooDelta">—</span>
+                </div>
+
+                <!-- Full explanation -->
+                <div class="xai-explanation" id="xaiExplanation"></div>
             </div>
 
             <!-- Layer Grid -->
@@ -373,7 +416,16 @@
                             <div class="arch-step__desc">Burstiness, perplexity proxy, vocabulary richness, bigram
                                 repetition, formality markers — dual output: is_phishing + is_ai_generated</div>
                         </div>
-                        <div class="arch-step__weight arch-step__weight--ai">NEW</div>
+                        <div class="arch-step__weight arch-step__weight--ai">Week 5</div>
+                    </div>
+                    <div class="arch-step arch-step--xai">
+                        <div class="arch-step__num">XAI</div>
+                        <div class="arch-step__info">
+                            <div class="arch-step__name">Explainable AI (XAI)</div>
+                            <div class="arch-step__desc">Token-level attribution via DistilBERT attention weights +
+                                leave-one-out perturbation + human-readable risk explanation</div>
+                        </div>
+                        <div class="arch-step__weight arch-step__weight--xai">NEW</div>
                     </div>
                 </div>
             </div>

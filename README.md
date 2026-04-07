@@ -110,7 +110,7 @@ Most phishing detectors catch traditional, human-written phishing emails. This p
 | 5 | `link_checker.py` | 20% | Follows redirects, detects domain changes, URL shorteners | requests + redirect chain analysis |
 | 6 | `header_analyzer.py` | 10% | SPF/DKIM/DMARC auth, Reply-To mismatch, Received chain hops | email.parser + dnspython |
 | — | `ai_authorship.py` | — | Detects AI-generated email text (perplexity, burstiness) | Statistical NLP (dual output scorer) |
-| — | `xai_explainer.py` | — | Token attribution + human-readable risk explanations | SHAP / LIME + DistilBERT attention |
+| — | `xai_explainer.py` | — | Token attribution + human-readable risk explanations | DistilBERT attention + LOO perturbation + rule-based categories |
 | — | `deep_router.py` | — | Combines all layers into weighted risk score | Weighted aggregation + boost logic |
 
 ---
@@ -173,7 +173,7 @@ Most phishing detectors catch traditional, human-written phishing emails. This p
 | Frontend | HTML + CSS + JS (dark mode) | ✅ |
 | Chrome Extension | Manifest V3 (Gmail integration) | ✅ |
 | AI Authorship Detection | Statistical NLP (perplexity + burstiness) | ✅ |
-| Explainable AI (XAI) | SHAP / LIME + DistilBERT attention weights | ⬜ In Progress |
+| Explainable AI (XAI) | DistilBERT attention attribution + LOO perturbation + rule-based risk categories | ✅ |
 | Header Forensics | email.parser + dnspython (SPF/DKIM/DMARC) | ⬜ In Progress |
 | Adversarial Robustness | Evasion attack test suite | ⬜ In Progress |
 | Sender Reputation | SQLite reputation store + homoglyph scorer | ⬜ Planned |
@@ -221,11 +221,12 @@ Most phishing detectors catch traditional, human-written phishing emails. This p
 - [x] Expose dual classification output: `is_phishing` + `is_ai_generated` (both scored 0–1)
 - [x] Add `ai_authorship_score` to `/deep-analyze` response schema
 
-#### Priority 2 — Explainable AI (XAI) Dashboard
-- [ ] Integrate SHAP/LIME for token-level attribution on DistilBERT predictions
-- [ ] Surface attention weights to highlight the top phrases that triggered phishing classification
-- [ ] Add human-readable risk explanation to API response ("flagged because: urgency language + suspicious URL + new domain")
-- [ ] Render XAI attribution in the frontend dashboard (highlighted words)
+#### Priority 2 — Explainable AI (XAI) Dashboard ✅
+- [x] Token-level attribution via DistilBERT CLS-averaged attention weights (last transformer layer)
+- [x] Leave-one-out (LOO) perturbation on top token — measures confidence delta when key token is removed
+- [x] Rule-based risk category detection: urgency, credential request, threat, reward lure, brand impersonation, suspicious URL
+- [x] Human-readable explanation in API response ("flagged because: urgency + credential request + brand impersonation")
+- [x] XAI dashboard panel in frontend: highlighted tokens (red/amber/purple), top-token bar chart, LOO delta, full explanation text
 
 #### Priority 3 — Email Header Forensics Layer
 - [ ] Parse SPF / DKIM / DMARC authentication results from email headers
@@ -328,7 +329,7 @@ Hybrid-AI-Defense/
 5. **Test Suite** — Pytest tests for all API endpoints ✅
 6. **Documentation** — Error handling & architecture docs ✅
 7. **AI Authorship Detector** — Dual classifier: is_phishing + is_ai_generated ✅
-8. **Explainable AI (XAI)** — Token attribution + human-readable risk explanations ⬜
+8. **Explainable AI (XAI)** — Token attribution + human-readable risk explanations ✅
 9. **Header Forensics Layer** — SPF/DKIM/DMARC + Received chain analysis (Layer 6) ⬜
 10. **Adversarial Robustness Report** — Detection rates under evasion attacks ⬜
 11. **Sender Reputation Store** — Homoglyph scoring + behavioral profiling ⬜
@@ -402,4 +403,4 @@ python -m http.server 3000
 
 ---
 
-*Last Updated: April 5, 2026 — Added AI authorship detection layer (burstiness, perplexity proxy, vocabulary richness, bigram repetition, formality scoring); dual output is_phishing + is_ai_generated now live in /deep-analyze*
+*Last Updated: April 7, 2026 — Added Explainable AI (XAI) dashboard: DistilBERT attention-based token attribution, leave-one-out perturbation, rule-based risk category detection, human-readable explanations, and frontend XAI panel with highlighted tokens + bar chart*

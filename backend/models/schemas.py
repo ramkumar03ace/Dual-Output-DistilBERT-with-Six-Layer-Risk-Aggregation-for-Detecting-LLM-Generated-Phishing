@@ -188,6 +188,26 @@ class AIAuthorshipSchema(BaseModel):
     formality_score: float = Field(0.0, description="High formal/AI discourse marker density (0-1)", ge=0, le=1)
 
 
+# --- XAI Schemas ---
+
+class TokenAttributionSchema(BaseModel):
+    """Attribution score for a single token."""
+    token: str = Field(..., description="The word/token")
+    score: float = Field(..., description="Attribution score (0-1, higher = more influential)", ge=0, le=1)
+    is_highlighted: bool = Field(False, description="Whether this token should be visually highlighted")
+
+
+class XAIExplanationSchema(BaseModel):
+    """Explainable AI output — token attribution + human-readable risk explanation."""
+    available: bool = Field(True, description="Whether XAI ran successfully")
+    tokens: List[TokenAttributionSchema] = Field(default_factory=list, description="Token-level attribution scores")
+    top_tokens: List[str] = Field(default_factory=list, description="Top influential tokens (sorted by score)")
+    risk_categories: List[str] = Field(default_factory=list, description="Detected risk categories (urgency, credential_request, etc.)")
+    explanation: str = Field("", description="Full human-readable explanation of the classification decision")
+    summary: str = Field("", description="Short one-liner summary of why this was flagged")
+    top_token_confidence_delta: float = Field(0.0, description="Confidence drop when top token is removed (LOO perturbation)")
+
+
 class DeepAnalysisRequest(BaseModel):
     """Request for deep analysis (text + URL + crawl + visual + sender)."""
     text: str = Field(..., description="Email body text", min_length=1)
@@ -222,6 +242,9 @@ class DeepAnalysisResponse(BaseModel):
 
     # AI authorship detection (dual classifier output)
     ai_authorship: Optional[AIAuthorshipSchema] = Field(None, description="AI-generated text detection result")
+
+    # XAI — token attribution + human-readable explanation
+    xai_explanation: Optional[XAIExplanationSchema] = Field(None, description="Explainable AI token attribution and risk explanation")
 
     # Combined verdict
     overall_verdict: str = Field(..., description="SAFE, SUSPICIOUS, or PHISHING")

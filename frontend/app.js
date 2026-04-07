@@ -221,6 +221,7 @@ function renderResults(data) {
         ['visual_analysis',        '👁️ Visual'],
         ['link_checking',          '🔀 Links'],
         ['ai_authorship_detection','🤖 AI Authorship'],
+        ['xai_explanation',        '🔍 XAI'],
     ]);
     layersBadges.innerHTML = (data.analysis_layers || [])
         .map(l => `<span>${layerNames.get(l) || l}</span>`)
@@ -316,6 +317,9 @@ function renderResults(data) {
 
     // --- AI Authorship ---
     renderAIAuthorship(data.ai_authorship || null);
+
+    // --- XAI Explanation ---
+    renderXAI(data.xai_explanation || null);
 
     // --- Risk Factors ---
     if (data.risk_factors && data.risk_factors.length > 0) {
@@ -413,6 +417,112 @@ function renderAIAuthorship(ai) {
     });
 }
 
+// ---------- XAI Panel Rendering ----------
+const xaiPanel = $('#xaiPanel');
+const xaiSummary = $('#xaiSummary');
+const xaiCategories = $('#xaiCategories');
+const xaiTokenView = $('#xaiTokenView');
+const xaiTopTokens = $('#xaiTopTokens');
+const xaiBars = $('#xaiBars');
+const xaiLoo = $('#xaiLoo');
+const xaiLooDelta = $('#xaiLooDelta');
+const xaiExplanation = $('#xaiExplanation');
+
+const XAI_CATEGORY_LABELS = {
+    urgency:             { label: 'Urgency',              icon: '⏰' },
+    credential_request:  { label: 'Credential Request',   icon: '🔑' },
+    threat:              { label: 'Threat / Suspension',  icon: '🚨' },
+    reward:              { label: 'Reward Lure',          icon: '🎁' },
+    brand_impersonation: { label: 'Brand Impersonation',  icon: '🏷️' },
+    suspicious_url:      { label: 'Suspicious URL',       icon: '🔗' },
+};
+
+function renderXAI(xai) {
+    if (!xai || !xai.available) {
+        xaiPanel.style.display = 'none';
+        return;
+    }
+    xaiPanel.style.display = 'block';
+
+    // --- Summary ---
+    xaiSummary.textContent = xai.summary || '';
+
+    // --- Risk category pills ---
+    xaiCategories.innerHTML = '';
+    (xai.risk_categories || []).forEach(cat => {
+        const info = XAI_CATEGORY_LABELS[cat] || { label: cat, icon: '⚠️' };
+        const pill = document.createElement('span');
+        pill.className = 'xai-cat-pill';
+        pill.textContent = `${info.icon} ${info.label}`;
+        xaiCategories.appendChild(pill);
+    });
+
+    // --- Token attribution view ---
+    xaiTokenView.innerHTML = '';
+    (xai.tokens || []).forEach(t => {
+        const span = document.createElement('span');
+        span.textContent = t.token + ' ';
+        if (t.is_highlighted) {
+            const s = t.score;
+            if (s >= 0.80) {
+                span.className = 'xai-tok xai-tok--high';
+            } else if (s >= 0.60) {
+                span.className = 'xai-tok xai-tok--mid';
+            } else {
+                span.className = 'xai-tok xai-tok--low';
+            }
+            span.title = `Attribution: ${(s * 100).toFixed(0)}%`;
+        }
+        xaiTokenView.appendChild(span);
+    });
+
+    // --- Top tokens bar chart ---
+    if (xai.top_tokens && xai.top_tokens.length > 0) {
+        xaiTopTokens.style.display = 'block';
+        xaiBars.innerHTML = '';
+        // Find max score among top tokens for scaling
+        const topScores = (xai.tokens || [])
+            .filter(t => xai.top_tokens.includes(t.token) || xai.top_tokens.includes(t.token.replace(/[^\w]/g, '')))
+            .reduce((m, t) => { m[t.token] = t.score; return m; }, {});
+
+        xai.top_tokens.slice(0, 8).forEach(tok => {
+            const score = topScores[tok] || 0.7;
+            const pct = Math.round(score * 100);
+            const row = document.createElement('div');
+            row.className = 'xai-bar-row';
+            row.innerHTML = `
+                <span class="xai-bar-label">${escapeHtml(tok)}</span>
+                <div class="xai-bar-wrap">
+                    <div class="xai-bar-fill" style="width:${pct}%"></div>
+                </div>
+                <span class="xai-bar-val">${pct}%</span>`;
+            xaiBars.appendChild(row);
+        });
+    } else {
+        xaiTopTokens.style.display = 'none';
+    }
+
+    // --- LOO delta ---
+    const delta = xai.top_token_confidence_delta || 0;
+    if (Math.abs(delta) > 0.001) {
+        xaiLoo.style.display = 'flex';
+        xaiLooDelta.textContent = `${delta >= 0 ? '-' : '+'}${(Math.abs(delta) * 100).toFixed(1)}%`;
+        xaiLooDelta.style.color = delta >= 0 ? 'var(--phishing)' : 'var(--safe)';
+    } else {
+        xaiLoo.style.display = 'none';
+    }
+
+    // --- Full explanation ---
+    xaiExplanation.innerHTML = '';
+    if (xai.explanation) {
+        xai.explanation.split('\n').forEach(line => {
+            const p = document.createElement('p');
+            p.textContent = line;
+            xaiExplanation.appendChild(p);
+        });
+    }
+}
+
 // ---------- HTML Escape ----------
 function escapeHtml(str) {
     const div = document.createElement('div');
@@ -463,7 +573,7 @@ function closeLightbox() {
 
 
 // ---------- Progress Stepper ----------
-const stepIds = ['step-text', 'step-url', 'step-crawl', 'step-visual', 'step-links', 'step-ai'];
+const stepIds = ['step-text', 'step-url', 'step-crawl', 'step-visual', 'step-links', 'step-ai', 'step-xai'];
 let progressCancelled = false;
 
 function resetProgress() {
@@ -525,6 +635,12 @@ async function animateProgress(crawlEnabled, screenshotsEnabled) {
 
     // Step 6: AI Authorship
     setStepState('step-ai', 'running', 'Detecting…');
+    await sleep(400);
+    if (progressCancelled) return;
+    setStepState('step-ai', 'done', '✓ Done');
+
+    // Step 7: XAI
+    setStepState('step-xai', 'running', 'Explaining…');
 }
 
 function finalizeProgress(data) {
@@ -538,6 +654,7 @@ function finalizeProgress(data) {
         visual_analysis:         'step-visual',
         link_checking:           'step-links',
         ai_authorship_detection: 'step-ai',
+        xai_explanation:         'step-xai',
     };
 
     const layers = data.analysis_layers || [];
@@ -546,8 +663,8 @@ function finalizeProgress(data) {
         const entry = Object.entries(layerMap).find(([, v]) => v === id);
         if (!entry) { setStepState(id, 'skipped', 'Skipped'); return; }
         const [layerKey] = entry;
-        // ai_authorship always runs (no URLs needed) — always mark done
-        if (layerKey === 'ai_authorship_detection') {
+        // ai_authorship and xai always run — always mark done
+        if (layerKey === 'ai_authorship_detection' || layerKey === 'xai_explanation') {
             setStepState(id, 'done', '✓ Done');
         } else if (layers.includes(layerKey)) {
             setStepState(id, 'done', '✓ Done');

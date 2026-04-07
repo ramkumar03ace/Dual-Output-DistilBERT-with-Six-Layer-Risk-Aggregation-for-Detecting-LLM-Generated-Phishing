@@ -26,6 +26,8 @@ from models.schemas import (
     LinkCheckSchema,
     SenderAnalysisSchema,
     AIAuthorshipSchema,
+    XAIExplanationSchema,
+    TokenAttributionSchema,
 )
 from analyzers.url_analyzer import url_analyzer
 from analyzers.email_parser import EmailParser
@@ -35,6 +37,7 @@ from analyzers.link_checker import link_checker
 from analyzers.sender_analyzer import sender_analyzer
 from services.email_classifier import classifier
 from services.ai_authorship import ai_authorship_detector
+from services.xai_explainer import xai_explainer
 from config import settings
 
 logger = logging.getLogger(__name__)
@@ -271,6 +274,35 @@ async def deep_analysis(request: DeepAnalysisRequest):
             )
 
         # ==========================================
+        # XAI: Explainable AI — token attribution + risk explanation
+        # ==========================================
+        xai_result = await asyncio.to_thread(
+            xai_explainer.explain,
+            request.text,
+            request.subject,
+            is_phishing,
+            confidence,
+            classifier,
+        )
+        xai_schema = XAIExplanationSchema(
+            available=xai_result.available,
+            tokens=[
+                TokenAttributionSchema(
+                    token=t.token,
+                    score=t.score,
+                    is_highlighted=t.is_highlighted,
+                )
+                for t in xai_result.tokens
+            ],
+            top_tokens=xai_result.top_tokens,
+            risk_categories=xai_result.risk_categories,
+            explanation=xai_result.explanation,
+            summary=xai_result.summary,
+            top_token_confidence_delta=xai_result.top_token_confidence_delta,
+        )
+        analysis_layers.append("xai_explanation")
+
+        # ==========================================
         # LAYER 5: Link Checking
         # ==========================================
         link_schema = None
@@ -369,6 +401,7 @@ async def deep_analysis(request: DeepAnalysisRequest):
             link_analysis=link_schema,
             sender_analysis=sender_schema,
             ai_authorship=ai_schema,
+            xai_explanation=xai_schema,
             overall_verdict=verdict,
             overall_risk_score=round(combined_risk, 4),
             is_ai_generated=ai_result.is_ai_generated,

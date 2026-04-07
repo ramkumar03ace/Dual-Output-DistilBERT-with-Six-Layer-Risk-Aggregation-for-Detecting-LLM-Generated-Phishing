@@ -1572,6 +1572,238 @@ body {
   50% { opacity: 0.55; }
 }
 
+/* --- Architecture step highlight for XAI layer --- */
+.arch-step--xai .arch-step__num {
+  background: rgba(180, 100, 255, 0.1);
+  border-color: rgba(180, 100, 255, 0.3);
+  color: #b464ff;
+  font-size: 0.58rem;
+}
+
+.arch-step__weight--xai {
+  background: rgba(180, 100, 255, 0.1);
+  border: 1px solid rgba(180, 100, 255, 0.25);
+  color: #b464ff;
+  animation: newPulse 2s ease-in-out infinite;
+}
+
+/* ============================================
+   XAI PANEL
+   ============================================ */
+
+.xai-panel {
+  margin-top: 1.5rem;
+  border: 1px solid rgba(180, 100, 255, 0.2);
+  background: rgba(20, 14, 30, 0.65);
+}
+
+.xai-panel .card__title {
+  color: #b464ff;
+}
+
+.xai-summary {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  background: rgba(180, 100, 255, 0.07);
+  border-left: 3px solid #b464ff;
+  border-radius: var(--radius-sm);
+}
+
+/* Risk category pills */
+.xai-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1.2rem;
+}
+
+.xai-cat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(180, 100, 255, 0.12);
+  border: 1px solid rgba(180, 100, 255, 0.3);
+  color: #c880ff;
+  white-space: nowrap;
+}
+
+/* Token attribution view */
+.xai-token-section {
+  margin-bottom: 1.2rem;
+}
+
+.xai-token-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.xai-token-hint {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.xai-token-view {
+  line-height: 2.1;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  word-break: break-word;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+/* Token highlight classes */
+.xai-tok {
+  display: inline;
+  border-radius: 3px;
+  padding: 1px 3px;
+  font-weight: 600;
+  cursor: default;
+  transition: filter 0.15s;
+}
+.xai-tok:hover {
+  filter: brightness(1.2);
+}
+
+.xai-tok--high {
+  background: rgba(255, 23, 68, 0.22);
+  color: #ff6b8a;
+  border-bottom: 2px solid rgba(255, 23, 68, 0.6);
+}
+.xai-tok--mid {
+  background: rgba(255, 171, 0, 0.18);
+  color: #ffc84a;
+  border-bottom: 2px solid rgba(255, 171, 0, 0.5);
+}
+.xai-tok--low {
+  background: rgba(180, 100, 255, 0.12);
+  color: #c880ff;
+  border-bottom: 2px solid rgba(180, 100, 255, 0.3);
+}
+
+/* Legend */
+.xai-legend {
+  display: flex;
+  gap: 1.2rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+.xai-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.73rem;
+  color: var(--text-muted);
+}
+
+/* Top tokens bar chart */
+.xai-top-tokens {
+  margin-bottom: 1.2rem;
+}
+
+.xai-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.5rem;
+}
+
+.xai-bar-row {
+  display: grid;
+  grid-template-columns: 110px 1fr 44px;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.xai-bar-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-family: var(--mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.xai-bar-wrap {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.xai-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #b464ff, #e040fb);
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 0;
+}
+
+.xai-bar-val {
+  font-size: 0.75rem;
+  color: #b464ff;
+  font-family: var(--mono);
+  text-align: right;
+}
+
+/* LOO delta */
+.xai-loo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  font-size: 0.82rem;
+}
+
+.xai-loo-label {
+  color: var(--text-muted);
+}
+
+.xai-loo-delta {
+  font-weight: 700;
+  font-family: var(--mono);
+  font-size: 1rem;
+}
+
+/* Full explanation */
+.xai-explanation {
+  border-top: 1px solid var(--border);
+  padding-top: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.xai-explanation p {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.xai-explanation p:first-child {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
 /* --- Responsive --- */
 @media (max-width: 640px) {
   .ai-authorship-banner__header {
@@ -1584,5 +1816,8 @@ body {
   }
   .ai-signal-row {
     grid-template-columns: 90px 1fr 36px;
+  }
+  .xai-bar-row {
+    grid-template-columns: 80px 1fr 36px;
   }
 }
