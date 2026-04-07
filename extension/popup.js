@@ -182,17 +182,20 @@ function renderResults(data) {
     // Gauge
     setGauge(data.overall_risk_score, data.overall_verdict);
 
-    // Layer badges
-    const layerNames = {
-        text_classification: '🧠 Text',
-        sender_analysis: '👤 Sender',
-        url_analysis: '🔗 URL',
-        web_crawling: '🕷️ Crawl',
-        visual_analysis: '👁️ Visual',
-        link_checking: '🔀 Links',
-    };
+    // Layer badges — use Map to avoid raw key fallthrough
+    const layerNames = new Map([
+        ['text_classification',     '🧠 Text'],
+        ['sender_analysis',         '👤 Sender'],
+        ['url_analysis',            '🔗 URL'],
+        ['web_crawling',            '🕷️ Crawl'],
+        ['visual_analysis',         '👁️ Visual'],
+        ['link_checking',           '🔀 Links'],
+        ['header_forensics',        '📋 Headers'],
+        ['ai_authorship_detection', '🤖 AI Auth'],
+        ['xai_explanation',         '🔍 XAI'],
+    ]);
     layersBadges.innerHTML = (data.analysis_layers || [])
-        .map(l => `<span>${layerNames[l] || l}</span>`)
+        .map(l => `<span>${layerNames.get(l) || l}</span>`)
         .join('');
 
     // Layer 1: Text
@@ -281,6 +284,15 @@ function renderResults(data) {
         resetLayerCard(layers.links);
     }
 
+    // AI Authorship
+    renderAIAuthorship(data.ai_authorship || null);
+
+    // Header Forensics
+    renderHeaders(data.header_analysis || null);
+
+    // XAI summary
+    renderXAISummary(data.xai_explanation || null);
+
     // Risk Factors
     if (data.risk_factors && data.risk_factors.length > 0) {
         riskFactorsCard.style.display = 'block';
@@ -309,6 +321,142 @@ function renderResults(data) {
             ssGallery.appendChild(thumb);
         });
         ssSection.style.display = 'block';
+    }
+}
+
+// ---------- AI Authorship Render ----------
+function renderAIAuthorship(ai) {
+    const card = document.getElementById('aiAuthorshipCard');
+    if (!ai || !card) return;
+
+    card.style.display = 'block';
+    const score = ai.ai_authorship_score;
+    const isAI = ai.is_ai_generated;
+
+    const pill = document.getElementById('aiAuthPill');
+    const scoreEl = document.getElementById('aiAuthScore');
+    const signalsList = document.getElementById('aiAuthSignals');
+
+    if (pill) {
+        pill.textContent = isAI ? '🤖 AI-Generated' : '✍️ Human-Written';
+        pill.className = 'ai-auth-pill ' + (isAI ? 'ai-auth-pill--ai' : 'ai-auth-pill--human');
+    }
+    if (scoreEl) {
+        scoreEl.textContent = (score * 100).toFixed(0) + '%';
+        scoreEl.style.color = isAI ? 'var(--phishing)' : 'var(--safe)';
+    }
+
+    // Signal bars
+    const signals = [
+        { id: 'sigB', label: 'Burstiness',  val: ai.burstiness_score  },
+        { id: 'sigP', label: 'Perplexity',  val: ai.perplexity_proxy  },
+        { id: 'sigV', label: 'Vocab',       val: ai.vocabulary_richness },
+        { id: 'sigR', label: 'Repetition',  val: ai.repetition_score  },
+        { id: 'sigF', label: 'Formality',   val: ai.formality_score   },
+    ];
+    if (signalsList) {
+        signalsList.innerHTML = signals.map(s => {
+            const pct = Math.round((s.val || 0) * 100);
+            const color = pct >= 60 ? 'var(--phishing)' : pct >= 40 ? 'var(--suspicious)' : 'var(--safe)';
+            return `<li class="ai-signal-row-ext">
+                <span class="ai-sig-label">${s.label}</span>
+                <div class="ai-sig-bar-wrap"><div class="ai-sig-bar" style="width:${pct}%;background:${color}"></div></div>
+                <span class="ai-sig-val">${pct}%</span>
+            </li>`;
+        }).join('');
+    }
+}
+
+// ---------- Header Forensics Render ----------
+function renderHeaders(ha) {
+    const card = document.getElementById('headerCard');
+    if (!ha || !card) return;
+
+    card.style.display = 'block';
+
+    // Score bar
+    const scoreEl = document.getElementById('headerScore');
+    const barEl   = document.getElementById('headerBar');
+    const flagsEl = document.getElementById('headerFlags');
+    const badgesEl = document.getElementById('headerAuthBadges');
+
+    if (scoreEl) {
+        scoreEl.textContent = (ha.risk_score * 100).toFixed(0) + '%';
+        const cls = ha.risk_score >= 0.65 ? 'phishing' : ha.risk_score >= 0.30 ? 'suspicious' : 'safe';
+        scoreEl.className = `layer-score score-${cls}`;
+    }
+    if (barEl) {
+        const cls = ha.risk_score >= 0.65 ? 'phishing' : ha.risk_score >= 0.30 ? 'suspicious' : 'safe';
+        barEl.className = `layer-bar__fill bar-${cls}`;
+        requestAnimationFrame(() => { barEl.style.width = Math.max(ha.risk_score * 100, 2) + '%'; });
+    }
+
+    // Auth badges
+    if (badgesEl) {
+        badgesEl.innerHTML = [
+            { label: 'SPF',   val: ha.spf_result  },
+            { label: 'DKIM',  val: ha.dkim_result },
+            { label: 'DMARC', val: ha.dmarc_result },
+        ].map(({ label, val }) => {
+            const v = (val || 'none').toLowerCase();
+            const cls = v === 'pass' ? 'hdr-badge--pass'
+                      : v === 'fail' ? 'hdr-badge--fail'
+                      : v === 'softfail' ? 'hdr-badge--softfail'
+                      : 'hdr-badge--none';
+            return `<span class="hdr-badge ${cls}">${label}: ${val || 'none'}</span>`;
+        }).join('');
+    }
+
+    // Flags
+    if (flagsEl) {
+        flagsEl.innerHTML = '';
+        const items = [];
+        if (ha.display_name_spoof)   items.push(`🎭 Spoof: claims ${ha.spoofed_brand}`);
+        if (ha.reply_to_mismatch)    items.push(`↪ Reply-To: ${ha.reply_to_domain}`);
+        if (ha.return_path_mismatch) items.push(`↩ Return-Path: ${ha.return_path_domain}`);
+        if (ha.date_anomaly)         items.push(`📅 Date anomaly`);
+        if (ha.suspicious_mailer)    items.push(`⚙️ Suspicious mailer`);
+        if (ha.received_hops > 7)    items.push(`🔁 ${ha.received_hops} Received hops`);
+        if (ha.received_hops === 0)  items.push('⚠️ No Received headers');
+        if (ha.from_domain)          items.push(`From: ${ha.from_domain}`);
+        if (items.length === 0)      items.push('No header anomalies');
+        items.forEach(f => {
+            const li = document.createElement('li');
+            li.textContent = f;
+            flagsEl.appendChild(li);
+        });
+    }
+}
+
+// ---------- XAI Summary Render ----------
+function renderXAISummary(xai) {
+    const card = document.getElementById('xaiSummaryCard');
+    if (!xai || !xai.available || !card) return;
+
+    card.style.display = 'block';
+
+    const summaryEl = document.getElementById('xaiSummaryText');
+    const catsEl    = document.getElementById('xaiCatPills');
+    const topEl     = document.getElementById('xaiTopTokens');
+
+    if (summaryEl) summaryEl.textContent = xai.summary || '';
+
+    if (catsEl) {
+        const catLabels = {
+            urgency:             '⏰ Urgency',
+            credential_request:  '🔑 Credential',
+            threat:              '🚨 Threat',
+            reward:              '🎁 Reward',
+            brand_impersonation: '🏷️ Brand Spoof',
+            suspicious_url:      '🔗 Suspicious URL',
+        };
+        catsEl.innerHTML = (xai.risk_categories || [])
+            .map(c => `<span class="xai-pill">${catLabels[c] || c}</span>`)
+            .join('');
+    }
+
+    if (topEl && xai.top_tokens && xai.top_tokens.length > 0) {
+        topEl.textContent = 'Top triggers: ' + xai.top_tokens.slice(0, 6).map(t => `"${t}"`).join(', ');
     }
 }
 

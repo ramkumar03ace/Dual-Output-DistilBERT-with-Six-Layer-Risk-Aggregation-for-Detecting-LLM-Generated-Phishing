@@ -171,6 +171,39 @@
           <ul class="layer-flags" id="linkFlags"></ul>
         </div>
 
+        <!-- Layer 6: Header Forensics -->
+        <div class="layer-card layer-card--headers" id="headerCard" style="display:none;">
+          <div class="layer-card__header">
+            <span class="layer-name"><span class="li">📋</span> Headers</span>
+            <span class="layer-score" id="headerScore">—</span>
+          </div>
+          <div class="layer-bar">
+            <div class="layer-bar__fill" id="headerBar"></div>
+          </div>
+          <div class="header-auth-badges" id="headerAuthBadges"></div>
+          <ul class="layer-flags" id="headerFlags"></ul>
+        </div>
+
+      </div>
+
+      <!-- AI Authorship Card -->
+      <div class="ai-auth-card" id="aiAuthorshipCard" style="display:none;">
+        <div class="ai-auth-card__header">
+          <span class="section-title"><span class="icon">🤖</span> AI Authorship</span>
+          <div class="ai-auth-right">
+            <span class="ai-auth-score" id="aiAuthScore">—</span>
+            <span class="ai-auth-pill" id="aiAuthPill">—</span>
+          </div>
+        </div>
+        <ul class="ai-signals-list" id="aiAuthSignals"></ul>
+      </div>
+
+      <!-- XAI Summary Card -->
+      <div class="xai-summary-card" id="xaiSummaryCard" style="display:none;">
+        <div class="section-title"><span class="icon">🔍</span> Why Flagged?</div>
+        <div class="xai-summary-text" id="xaiSummaryText"></div>
+        <div class="xai-cat-pills" id="xaiCatPills"></div>
+        <div class="xai-top-tokens-text" id="xaiTopTokens"></div>
       </div>
 
       <!-- Screenshot Gallery -->
