@@ -188,6 +188,30 @@ class AIAuthorshipSchema(BaseModel):
     formality_score: float = Field(0.0, description="High formal/AI discourse marker density (0-1)", ge=0, le=1)
 
 
+# --- Header Forensics Schema ---
+
+class HeaderAnalysisSchema(BaseModel):
+    """Result of email header forensics analysis (Layer 6)."""
+    spf_result: str = Field("none", description="SPF check result: pass | fail | softfail | neutral | none")
+    dkim_result: str = Field("none", description="DKIM check result: pass | fail | present | none")
+    dmarc_result: str = Field("none", description="DMARC check result: pass | fail | none")
+    reply_to_mismatch: bool = Field(False, description="Reply-To domain differs from From domain")
+    from_domain: str = Field("", description="Sending domain extracted from From header")
+    reply_to_domain: str = Field("", description="Domain from Reply-To header")
+    return_path_domain: str = Field("", description="Domain from Return-Path header")
+    return_path_mismatch: bool = Field(False, description="Return-Path domain differs from From domain")
+    received_hops: int = Field(0, description="Number of Received headers (mail relay hops)")
+    display_name_spoof: bool = Field(False, description="Display name claims known brand but domain doesn't match")
+    spoofed_brand: str = Field("", description="Brand name being spoofed in display name")
+    suspicious_mailer: bool = Field(False, description="X-Mailer matches known phishing toolkit patterns")
+    mailer: str = Field("", description="X-Mailer / User-Agent header value")
+    date_anomaly: bool = Field(False, description="Email date is suspiciously far in future or past")
+    date_days_diff: int = Field(0, description="Days difference between email date and now")
+    is_suspicious: bool = Field(False, description="Whether headers look suspicious overall")
+    risk_score: float = Field(0.0, description="Header forensics risk score (0-1)", ge=0, le=1)
+    flags: List[str] = Field(default_factory=list, description="Specific suspicious findings")
+
+
 # --- XAI Schemas ---
 
 class TokenAttributionSchema(BaseModel):
@@ -209,10 +233,11 @@ class XAIExplanationSchema(BaseModel):
 
 
 class DeepAnalysisRequest(BaseModel):
-    """Request for deep analysis (text + URL + crawl + visual + sender)."""
+    """Request for deep analysis (text + URL + crawl + visual + sender + headers)."""
     text: str = Field(..., description="Email body text", min_length=1)
     email_html: Optional[str] = Field(None, description="Raw HTML of email (for extracting links from images, buttons, etc.)")
     subject: Optional[str] = Field(None, description="Email subject line")
+    raw_headers: Optional[str] = Field(None, description="Raw email headers block for forensic analysis (Layer 6)")
     crawl_urls: bool = Field(True, description="Whether to crawl URLs with browser")
     take_screenshots: bool = Field(True, description="Whether to capture screenshots")
     sender_info: Optional[SenderInfo] = Field(None, description="Email sender metadata from headers")
@@ -239,6 +264,9 @@ class DeepAnalysisResponse(BaseModel):
     
     # Sender analysis
     sender_analysis: Optional[SenderAnalysisSchema] = Field(None, description="Sender metadata analysis")
+
+    # Layer 6: Header forensics
+    header_analysis: Optional[HeaderAnalysisSchema] = Field(None, description="Email header forensics (SPF/DKIM/DMARC/Reply-To/Received chain)")
 
     # AI authorship detection (dual classifier output)
     ai_authorship: Optional[AIAuthorshipSchema] = Field(None, description="AI-generated text detection result")

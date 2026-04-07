@@ -34,12 +34,13 @@ let lastAnalysisResult = null;
 
 // Layer refs
 const layers = {
-    text: { score: $('#textScore'), bar: $('#textBar'), flags: $('#textFlags') },
-    sender: { score: $('#senderScore'), bar: $('#senderBar'), flags: $('#senderFlags'), card: $('#layerSender') },
-    url: { score: $('#urlScore'), bar: $('#urlBar'), flags: $('#urlFlags') },
-    crawl: { score: $('#crawlScore'), bar: $('#crawlBar'), flags: $('#crawlFlags') },
-    visual: { score: $('#visualScore'), bar: $('#visualBar'), flags: $('#visualFlags') },
-    links: { score: $('#linkScore'), bar: $('#linkBar'), flags: $('#linkFlags') },
+    text:    { score: $('#textScore'),   bar: $('#textBar'),   flags: $('#textFlags')   },
+    sender:  { score: $('#senderScore'), bar: $('#senderBar'), flags: $('#senderFlags'), card: $('#layerSender') },
+    url:     { score: $('#urlScore'),    bar: $('#urlBar'),    flags: $('#urlFlags')    },
+    crawl:   { score: $('#crawlScore'),  bar: $('#crawlBar'),  flags: $('#crawlFlags')  },
+    visual:  { score: $('#visualScore'), bar: $('#visualBar'), flags: $('#visualFlags') },
+    links:   { score: $('#linkScore'),   bar: $('#linkBar'),   flags: $('#linkFlags')   },
+    headers: { score: $('#headerScore'), bar: $('#headerBar'), flags: $('#headerFlags'), card: $('#layerHeaders'), badges: $('#headerAuthBadges') },
 };
 
 // AI authorship refs
@@ -67,6 +68,7 @@ const senderNameInput = $('#senderName');
 const mailedByInput = $('#mailedBy');
 const signedByInput = $('#signedBy');
 const securityInput = $('#securityInfo');
+const rawHeadersInput = $('#rawHeaders');
 
 // ---------- Health Check ----------
 async function checkHealth() {
@@ -220,6 +222,7 @@ function renderResults(data) {
         ['web_crawling',           '🕷️ Crawl'],
         ['visual_analysis',        '👁️ Visual'],
         ['link_checking',          '🔀 Links'],
+        ['header_forensics',       '📋 Headers'],
         ['ai_authorship_detection','🤖 AI Authorship'],
         ['xai_explanation',        '🔍 XAI'],
     ]);
@@ -320,6 +323,9 @@ function renderResults(data) {
 
     // --- XAI Explanation ---
     renderXAI(data.xai_explanation || null);
+
+    // --- Header Forensics ---
+    renderHeaders(data.header_analysis || null);
 
     // --- Risk Factors ---
     if (data.risk_factors && data.risk_factors.length > 0) {
@@ -523,6 +529,68 @@ function renderXAI(xai) {
     }
 }
 
+// ---------- Header Forensics Rendering ----------
+function renderHeaders(ha) {
+    const card = layers.headers.card;
+    if (!ha) {
+        card.style.display = 'none';
+        return;
+    }
+    card.style.display = 'block';
+
+    // Score + bar
+    setLayerCard(layers.headers, ha.risk_score, []);
+
+    // Auth result badges (SPF / DKIM / DMARC)
+    const badges = layers.headers.badges;
+    badges.innerHTML = '';
+    [
+        { label: 'SPF',   value: ha.spf_result  },
+        { label: 'DKIM',  value: ha.dkim_result },
+        { label: 'DMARC', value: ha.dmarc_result },
+    ].forEach(({ label, value }) => {
+        const badge = document.createElement('span');
+        const v = (value || 'none').toLowerCase();
+        let cls = 'hdr-badge--none';
+        if (v === 'pass')                         cls = 'hdr-badge--pass';
+        else if (v === 'fail')                    cls = 'hdr-badge--fail';
+        else if (v === 'softfail')                cls = 'hdr-badge--softfail';
+        else if (v === 'present' || v === 'neutral') cls = 'hdr-badge--neutral';
+        badge.className = `hdr-badge ${cls}`;
+        badge.textContent = `${label}: ${value || 'none'}`;
+        badges.appendChild(badge);
+    });
+
+    // Flags
+    const flagsList = layers.headers.flags;
+    flagsList.innerHTML = '';
+    const allFlags = [];
+
+    if (ha.display_name_spoof)    allFlags.push(`🎭 Display-name spoof: claims ${ha.spoofed_brand}`);
+    if (ha.reply_to_mismatch)     allFlags.push(`↪ Reply-To mismatch: ${ha.reply_to_domain}`);
+    if (ha.return_path_mismatch)  allFlags.push(`↩ Return-Path mismatch: ${ha.return_path_domain}`);
+    if (ha.date_anomaly)          allFlags.push(`📅 Date anomaly: ${ha.date_days_diff > 0 ? ha.date_days_diff + ' days future' : Math.abs(ha.date_days_diff) + ' days past'}`);
+    if (ha.suspicious_mailer)     allFlags.push(`⚙️ Suspicious mailer: ${ha.mailer.substring(0, 60)}`);
+    if (ha.received_hops > 7)     allFlags.push(`🔁 ${ha.received_hops} Received hops`);
+    if (ha.received_hops === 0)   allFlags.push('⚠️ No Received headers');
+    if (ha.from_domain)           allFlags.push(`From: ${ha.from_domain}`);
+
+    // Append extra flags from server
+    (ha.flags || []).forEach(f => {
+        if (!allFlags.some(existing => existing.includes(f.substring(0, 20)))) {
+            allFlags.push(f);
+        }
+    });
+
+    if (allFlags.length === 0) allFlags.push('No header anomalies detected');
+
+    allFlags.forEach(f => {
+        const li = document.createElement('li');
+        li.textContent = f;
+        flagsList.appendChild(li);
+    });
+}
+
 // ---------- HTML Escape ----------
 function escapeHtml(str) {
     const div = document.createElement('div');
@@ -573,7 +641,7 @@ function closeLightbox() {
 
 
 // ---------- Progress Stepper ----------
-const stepIds = ['step-text', 'step-url', 'step-crawl', 'step-visual', 'step-links', 'step-ai', 'step-xai'];
+const stepIds = ['step-text', 'step-url', 'step-crawl', 'step-visual', 'step-links', 'step-ai', 'step-xai', 'step-headers'];
 let progressCancelled = false;
 
 function resetProgress() {
@@ -655,6 +723,7 @@ function finalizeProgress(data) {
         link_checking:           'step-links',
         ai_authorship_detection: 'step-ai',
         xai_explanation:         'step-xai',
+        header_forensics:        'step-headers',
     };
 
     const layers = data.analysis_layers || [];
@@ -803,6 +872,12 @@ async function analyze() {
                 signed_by: signedByInput?.value?.trim() || null,
                 security: securityInput?.value?.trim() || null,
             };
+        }
+
+        // Raw headers for Layer 6 header forensics
+        const rawHdr = rawHeadersInput?.value?.trim();
+        if (rawHdr) {
+            body.raw_headers = rawHdr;
         }
 
         const res = await fetch(`${API_BASE}/deep-analyze`, {

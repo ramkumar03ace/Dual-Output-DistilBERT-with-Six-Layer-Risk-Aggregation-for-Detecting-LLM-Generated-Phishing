@@ -7,7 +7,9 @@ Pipeline:
 3. Web crawling (Playwright headless browser + screenshots)
 4. Visual analysis (fake login page detection)
 5. Recursive link checking (redirects, domain changes)
-6. AI authorship detection (perplexity, burstiness, vocabulary, repetition)
+6. Email header forensics (SPF/DKIM/DMARC, Reply-To mismatch, Received chain)
+7. AI authorship detection (perplexity, burstiness, vocabulary, repetition)
+8. XAI explanation (token attribution, risk categories, explanation text)
 """
 
 import asyncio
@@ -28,6 +30,7 @@ from models.schemas import (
     AIAuthorshipSchema,
     XAIExplanationSchema,
     TokenAttributionSchema,
+    HeaderAnalysisSchema,
 )
 from analyzers.url_analyzer import url_analyzer
 from analyzers.email_parser import EmailParser
@@ -35,6 +38,7 @@ from analyzers.web_crawler import web_crawler
 from analyzers.visual_analyzer import visual_analyzer
 from analyzers.link_checker import link_checker
 from analyzers.sender_analyzer import sender_analyzer
+from analyzers.header_analyzer import header_analyzer
 from services.email_classifier import classifier
 from services.ai_authorship import ai_authorship_detector
 from services.xai_explainer import xai_explainer
@@ -325,7 +329,44 @@ async def deep_analysis(request: DeepAnalysisRequest):
                 risk_factors.extend(link_result.flags[:3])
             
             analysis_layers.append("link_checking")
-        
+
+        # ==========================================
+        # LAYER 6: Header Forensics
+        # ==========================================
+        header_schema = None
+        header_risk = 0.0
+
+        if request.raw_headers:
+            header_result = await asyncio.to_thread(
+                header_analyzer.analyze, request.raw_headers
+            )
+            header_schema = HeaderAnalysisSchema(
+                spf_result=header_result.spf_result,
+                dkim_result=header_result.dkim_result,
+                dmarc_result=header_result.dmarc_result,
+                reply_to_mismatch=header_result.reply_to_mismatch,
+                from_domain=header_result.from_domain,
+                reply_to_domain=header_result.reply_to_domain,
+                return_path_domain=header_result.return_path_domain,
+                return_path_mismatch=header_result.return_path_mismatch,
+                received_hops=header_result.received_hops,
+                display_name_spoof=header_result.display_name_spoof,
+                spoofed_brand=header_result.spoofed_brand,
+                suspicious_mailer=header_result.suspicious_mailer,
+                mailer=header_result.mailer,
+                date_anomaly=header_result.date_anomaly,
+                date_days_diff=header_result.date_days_diff,
+                is_suspicious=header_result.is_suspicious,
+                risk_score=round(header_result.risk_score, 4),
+                flags=header_result.flags,
+            )
+            header_risk = header_result.risk_score
+
+            if header_result.is_suspicious:
+                risk_factors.extend(header_result.flags[:3])
+
+            analysis_layers.append("header_forensics")
+
         # ==========================================
         # COMBINED SCORING — Dynamic Weight Redistribution
         # ==========================================
@@ -358,6 +399,9 @@ async def deep_analysis(request: DeepAnalysisRequest):
         
         if link_schema:
             active_scores["links"] = (link_risk, 0.20)
+
+        if header_schema:
+            active_scores["headers"] = (header_risk, 0.10)
         
         # Normalize weights so they sum to ~0.90 (matching original total)
         # then compute weighted sum
@@ -379,6 +423,7 @@ async def deep_analysis(request: DeepAnalysisRequest):
             crawl_risk >= 0.40 if crawl_schemas else False,
             max_visual_risk >= 0.40 if visual_schemas else False,
             link_risk >= 0.30 if link_schema else False,
+            header_risk >= 0.25 if header_schema else False,
         ])
         if flagging_layers >= 2:
             combined_risk = min(1.0, combined_risk + 0.15)
@@ -400,6 +445,7 @@ async def deep_analysis(request: DeepAnalysisRequest):
             visual_analysis=visual_schemas,
             link_analysis=link_schema,
             sender_analysis=sender_schema,
+            header_analysis=header_schema,
             ai_authorship=ai_schema,
             xai_explanation=xai_schema,
             overall_verdict=verdict,

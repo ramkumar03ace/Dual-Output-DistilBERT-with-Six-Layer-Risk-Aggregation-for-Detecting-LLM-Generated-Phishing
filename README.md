@@ -108,7 +108,7 @@ Most phishing detectors catch traditional, human-written phishing emails. This p
 | 3 | `web_crawler.py` | 10% | Actually visits URLs in sandboxed browser, takes screenshots | Playwright Chromium (multiprocessing) |
 | 4 | `visual_analyzer.py` | 20% | Detects fake login pages, brand impersonation (12+ brands) | Heuristic rules |
 | 5 | `link_checker.py` | 20% | Follows redirects, detects domain changes, URL shorteners | requests + redirect chain analysis |
-| 6 | `header_analyzer.py` | 10% | SPF/DKIM/DMARC auth, Reply-To mismatch, Received chain hops | email.parser + dnspython |
+| 6 | `header_analyzer.py` | 10% | SPF/DKIM/DMARC auth, Reply-To mismatch, Received chain hops, display-name spoofing, Return-Path mismatch | email.parser (stdlib) |
 | — | `ai_authorship.py` | — | Detects AI-generated email text (perplexity, burstiness) | Statistical NLP (dual output scorer) |
 | — | `xai_explainer.py` | — | Token attribution + human-readable risk explanations | DistilBERT attention + LOO perturbation + rule-based categories |
 | — | `deep_router.py` | — | Combines all layers into weighted risk score | Weighted aggregation + boost logic |
@@ -174,7 +174,7 @@ Most phishing detectors catch traditional, human-written phishing emails. This p
 | Chrome Extension | Manifest V3 (Gmail integration) | ✅ |
 | AI Authorship Detection | Statistical NLP (perplexity + burstiness) | ✅ |
 | Explainable AI (XAI) | DistilBERT attention attribution + LOO perturbation + rule-based risk categories | ✅ |
-| Header Forensics | email.parser + dnspython (SPF/DKIM/DMARC) | ⬜ In Progress |
+| Header Forensics | email.parser stdlib (SPF/DKIM/DMARC + display-name spoof + Return-Path) | ✅ |
 | Adversarial Robustness | Evasion attack test suite | ⬜ In Progress |
 | Sender Reputation | SQLite reputation store + homoglyph scorer | ⬜ Planned |
 
@@ -228,11 +228,16 @@ Most phishing detectors catch traditional, human-written phishing emails. This p
 - [x] Human-readable explanation in API response ("flagged because: urgency + credential request + brand impersonation")
 - [x] XAI dashboard panel in frontend: highlighted tokens (red/amber/purple), top-token bar chart, LOO delta, full explanation text
 
-#### Priority 3 — Email Header Forensics Layer
-- [ ] Parse SPF / DKIM / DMARC authentication results from email headers
-- [ ] Detect Reply-To vs From mismatch
-- [ ] Analyze Received header chain for geolocation anomalies
-- [ ] Add header forensics as Layer 6 (~10% weight) in the weighted aggregator
+#### Priority 3 — Email Header Forensics Layer ✅
+- [x] Parse SPF / DKIM / DMARC from Authentication-Results + Received-SPF + DKIM-Signature headers
+- [x] Detect Reply-To vs From domain mismatch (strong phishing signal)
+- [x] Detect Return-Path vs From domain mismatch
+- [x] Count Received chain hops (>7 = relay abuse; 0 = spoofed)
+- [x] Display-name spoofing detection (claims known brand but domain doesn't match)
+- [x] X-Mailer / User-Agent phishing toolkit fingerprinting
+- [x] Date header anomaly detection (future-dated or very old emails)
+- [x] Added as Layer 6 (10% weight) in the weighted aggregator
+- [x] Frontend: Raw Headers textarea input, SPF/DKIM/DMARC auth badges, 📋 Headers layer card
 
 #### Priority 4 — Adversarial Robustness Testing
 - [ ] Test detection rate against homoglyph substitution attacks (`paypa1.com`)
@@ -330,7 +335,7 @@ Hybrid-AI-Defense/
 6. **Documentation** — Error handling & architecture docs ✅
 7. **AI Authorship Detector** — Dual classifier: is_phishing + is_ai_generated ✅
 8. **Explainable AI (XAI)** — Token attribution + human-readable risk explanations ✅
-9. **Header Forensics Layer** — SPF/DKIM/DMARC + Received chain analysis (Layer 6) ⬜
+9. **Header Forensics Layer** — SPF/DKIM/DMARC + Received chain analysis (Layer 6) ✅
 10. **Adversarial Robustness Report** — Detection rates under evasion attacks ⬜
 11. **Sender Reputation Store** — Homoglyph scoring + behavioral profiling ⬜
 12. **Paper** — Research paper for ICCCNT / ICACCS / IJERT ⬜
@@ -403,4 +408,4 @@ python -m http.server 3000
 
 ---
 
-*Last Updated: April 7, 2026 — Added Explainable AI (XAI) dashboard: DistilBERT attention-based token attribution, leave-one-out perturbation, rule-based risk category detection, human-readable explanations, and frontend XAI panel with highlighted tokens + bar chart*
+*Last Updated: April 7, 2026 — Added Email Header Forensics (Layer 6): SPF/DKIM/DMARC parsing, Reply-To/Return-Path mismatch, Received chain hop analysis, display-name spoofing, X-Mailer fingerprinting, date anomaly detection; 10% weight in aggregator; frontend auth badges + raw headers input*

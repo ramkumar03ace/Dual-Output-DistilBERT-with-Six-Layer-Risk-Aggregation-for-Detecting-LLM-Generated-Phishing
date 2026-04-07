@@ -1804,6 +1804,111 @@ body {
   color: var(--text-primary);
 }
 
+/* ============================================
+   HEADER FORENSICS LAYER
+   ============================================ */
+
+/* Architecture highlight */
+.arch-step--headers .arch-step__num {
+  background: rgba(0, 200, 220, 0.1);
+  border-color: rgba(0, 200, 220, 0.3);
+  color: #00c8dc;
+}
+
+.arch-step__weight--headers {
+  background: rgba(0, 200, 220, 0.1);
+  border: 1px solid rgba(0, 200, 220, 0.25);
+  color: #00c8dc;
+}
+
+/* Layer card tint */
+.layer-card--headers {
+  border-color: rgba(0, 200, 220, 0.18);
+}
+
+/* Raw headers textarea */
+.raw-headers-input {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  padding: 0.65rem 0.85rem;
+  resize: vertical;
+  min-height: 120px;
+  transition: border-color var(--transition);
+  box-sizing: border-box;
+}
+
+.raw-headers-input:focus {
+  outline: none;
+  border-color: rgba(0, 200, 220, 0.4);
+  box-shadow: 0 0 0 3px rgba(0, 200, 220, 0.08);
+}
+
+.raw-headers-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.label-hint {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  opacity: 0.75;
+}
+
+/* SPF / DKIM / DMARC auth badges */
+.header-auth-badges {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin: 0.5rem 0 0.4rem;
+}
+
+.hdr-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: var(--mono);
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.hdr-badge--pass {
+  background: rgba(0, 230, 118, 0.12);
+  border-color: rgba(0, 230, 118, 0.3);
+  color: var(--safe);
+}
+
+.hdr-badge--fail {
+  background: rgba(255, 23, 68, 0.12);
+  border-color: rgba(255, 23, 68, 0.35);
+  color: var(--phishing);
+}
+
+.hdr-badge--softfail {
+  background: rgba(255, 171, 0, 0.12);
+  border-color: rgba(255, 171, 0, 0.3);
+  color: var(--suspicious);
+}
+
+.hdr-badge--neutral {
+  background: rgba(0, 200, 220, 0.10);
+  border-color: rgba(0, 200, 220, 0.25);
+  color: #00c8dc;
+}
+
+.hdr-badge--none {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
 /* --- Responsive --- */
 @media (max-width: 640px) {
   .ai-authorship-banner__header {

@@ -53,9 +53,9 @@
                     data-placeholder="Paste the full email text here…"></div>
             </div>
 
-            <!-- Sender Metadata (optional, for manual analysis) -->
+            <!-- Sender Metadata + Raw Headers (optional) -->
             <details class="sender-details" id="senderDetails">
-                <summary class="sender-summary">👤 Sender Info (optional)</summary>
+                <summary class="sender-summary">👤 Sender Info &amp; Headers (optional)</summary>
                 <div class="sender-inputs">
                     <div class="input-group input-group--half">
                         <label for="senderEmail">From Email</label>
@@ -76,6 +76,12 @@
                     <div class="input-group">
                         <label for="securityInfo">Security</label>
                         <input type="text" id="securityInfo" placeholder="e.g. Standard encryption (TLS)" />
+                    </div>
+                    <!-- Raw headers for Layer 6 header forensics -->
+                    <div class="input-group" style="margin-top:0.75rem;">
+                        <label for="rawHeaders">Raw Email Headers <span class="label-hint">(paste full header block for Layer 6 forensics)</span></label>
+                        <textarea id="rawHeaders" class="raw-headers-input" rows="6"
+                            placeholder="Received: from mail.example.com ...&#10;From: attacker@evil.com&#10;Reply-To: attacker@evil.com&#10;Authentication-Results: spf=fail; dkim=fail; dmarc=fail&#10;..."></textarea>
                     </div>
                 </div>
             </details>
@@ -131,6 +137,11 @@
                 <div class="progress-step" id="step-xai" data-step="7">
                     <div class="progress-step__icon">🔍</div>
                     <div class="progress-step__label">XAI</div>
+                    <div class="progress-step__status"></div>
+                </div>
+                <div class="progress-step" id="step-headers" data-step="8">
+                    <div class="progress-step__icon">📋</div>
+                    <div class="progress-step__label">Headers</div>
                     <div class="progress-step__status"></div>
                 </div>
             </div>
@@ -327,6 +338,20 @@
                     </div>
                     <ul class="layer-card__flags" id="linkFlags"></ul>
                 </div>
+
+                <!-- Layer 6: Header Forensics -->
+                <div class="card layer-card layer-card--headers" id="layerHeaders" style="display:none;">
+                    <div class="layer-card__header">
+                        <span class="layer-card__name"><span class="layer-icon">📋</span> Headers</span>
+                        <span class="layer-card__score" id="headerScore">—</span>
+                    </div>
+                    <div class="layer-card__bar">
+                        <div class="layer-card__bar-fill" id="headerBar"></div>
+                    </div>
+                    <!-- Auth badges row -->
+                    <div class="header-auth-badges" id="headerAuthBadges"></div>
+                    <ul class="layer-card__flags" id="headerFlags"></ul>
+                </div>
             </div>
 
             <!-- Screenshot Gallery (populated by JS when crawl screenshots exist) -->
@@ -408,6 +433,15 @@
                                 expansion</div>
                         </div>
                         <div class="arch-step__weight">20%</div>
+                    </div>
+                    <div class="arch-step arch-step--headers">
+                        <div class="arch-step__num">6</div>
+                        <div class="arch-step__info">
+                            <div class="arch-step__name">Header Forensics</div>
+                            <div class="arch-step__desc">SPF / DKIM / DMARC authentication, Reply-To vs From mismatch,
+                                Received chain hop analysis, display-name spoofing detection</div>
+                        </div>
+                        <div class="arch-step__weight arch-step__weight--headers">10%</div>
                     </div>
                     <div class="arch-step arch-step--ai">
                         <div class="arch-step__num">AI</div>
