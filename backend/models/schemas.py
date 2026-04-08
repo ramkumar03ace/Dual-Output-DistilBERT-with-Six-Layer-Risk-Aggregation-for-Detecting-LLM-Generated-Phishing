@@ -232,6 +232,42 @@ class XAIExplanationSchema(BaseModel):
     top_token_confidence_delta: float = Field(0.0, description="Confidence drop when top token is removed (LOO perturbation)")
 
 
+# --- Adversarial Robustness Schemas ---
+
+class AdversarialAttackResult(BaseModel):
+    """Result for a single adversarial attack variant."""
+    attack_type: str = Field(..., description="Attack category: homoglyph | zero_width | url_obfuscation | prompt_evasion")
+    variant_name: str = Field(..., description="Human-readable description of the variant")
+    original_score: float = Field(..., description="Classifier confidence on original text", ge=0, le=1)
+    adversarial_score: float = Field(..., description="Classifier confidence on adversarial text", ge=0, le=1)
+    score_delta: float = Field(..., description="adversarial_score − original_score")
+    evasion_success: bool = Field(..., description="True if adversarial variant evaded all detection layers")
+    detection_notes: List[str] = Field(default_factory=list, description="Heuristic/classifier findings for this variant")
+
+
+class AdversarialAttackBreakdown(BaseModel):
+    """Per-attack-type summary."""
+    tested: int = Field(..., description="Number of variants tested for this attack type")
+    evaded: int = Field(..., description="Number of variants that evaded detection")
+
+
+class AdversarialRobustnessRequest(BaseModel):
+    """Request for adversarial robustness testing."""
+    text: str = Field(..., description="Email body text to test", min_length=10)
+    subject: Optional[str] = Field(None, description="Optional email subject")
+
+
+class AdversarialRobustnessResponse(BaseModel):
+    """Full adversarial robustness report."""
+    total_tests: int = Field(..., description="Total attack variants tested")
+    evasion_successes: int = Field(..., description="Number of variants that fully evaded detection")
+    evasion_rate: float = Field(..., description="Fraction of tests that evaded detection (0-1)", ge=0, le=1)
+    resilience_score: float = Field(..., description="1 − evasion_rate; higher is better (0-1)", ge=0, le=1)
+    summary: str = Field(..., description="Human-readable resilience summary")
+    attack_breakdown: dict = Field(default_factory=dict, description="Per-attack-type {tested, evaded} counts")
+    results: List[AdversarialAttackResult] = Field(default_factory=list, description="Per-variant results")
+
+
 class DeepAnalysisRequest(BaseModel):
     """Request for deep analysis (text + URL + crawl + visual + sender + headers)."""
     text: str = Field(..., description="Email body text", min_length=1)

@@ -907,8 +907,119 @@ async function analyze() {
     }
 }
 
+// ---------- Adversarial Robustness Test ----------
+const advTestBtn = $('#advTestBtn');
+const advResult = $('#advResult');
+const advResilienceScore = $('#advResilienceScore');
+const advEvasionRate = $('#advEvasionRate');
+const advTotalTests = $('#advTotalTests');
+const advEvaded = $('#advEvaded');
+const advSummary = $('#advSummary');
+const advBreakdown = $('#advBreakdown');
+const advTableBody = $('#advTableBody');
+
+const ADV_TYPE_LABELS = {
+    homoglyph:       { label: 'Homoglyph',       tag: 'adv-tag--homoglyph' },
+    zero_width:      { label: 'Zero-Width',      tag: 'adv-tag--zero_width' },
+    url_obfuscation: { label: 'URL Obfuscation', tag: 'adv-tag--url_obfuscation' },
+    prompt_evasion:  { label: 'Prompt Evasion',  tag: 'adv-tag--prompt_evasion' },
+};
+
+async function runAdversarialTest() {
+    const text = emailInput.innerText.trim();
+    if (!text) {
+        showError('Paste an email body first, then run the adversarial test.');
+        return;
+    }
+
+    advTestBtn.classList.add('loading');
+    advTestBtn.disabled = true;
+    advResult.style.display = 'none';
+
+    try {
+        const res = await fetch(`${API_BASE}/adversarial-test`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                text,
+                subject: subjectInput.value.trim() || null,
+            }),
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({ detail: res.statusText }));
+            throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        renderAdversarialResult(data);
+
+    } catch (err) {
+        showError(`Adversarial test failed: ${err.message}`);
+        console.error('Adversarial test error:', err);
+    } finally {
+        advTestBtn.classList.remove('loading');
+        advTestBtn.disabled = false;
+    }
+}
+
+function renderAdversarialResult(data) {
+    // Scores
+    const resilience = data.resilience_score;
+    const evasionRate = data.evasion_rate;
+
+    advResilienceScore.textContent = (resilience * 100).toFixed(0) + '%';
+    advResilienceScore.style.color = resilience >= 0.90 ? 'var(--safe)' : resilience >= 0.70 ? 'var(--suspicious)' : 'var(--phishing)';
+
+    advEvasionRate.textContent = (evasionRate * 100).toFixed(0) + '%';
+    advTotalTests.textContent = data.total_tests;
+    advEvaded.textContent = data.evasion_successes;
+
+    advSummary.textContent = data.summary;
+
+    // Breakdown pills
+    advBreakdown.innerHTML = '';
+    Object.entries(data.attack_breakdown || {}).forEach(([type, counts]) => {
+        const info = ADV_TYPE_LABELS[type] || { label: type, tag: '' };
+        const pill = document.createElement('span');
+        const allOk = counts.evaded === 0;
+        pill.className = `adv-breakdown-pill ${allOk ? 'adv-breakdown-pill--ok' : 'adv-breakdown-pill--warn'}`;
+        pill.textContent = `${info.label}: ${counts.evaded}/${counts.tested} evaded`;
+        advBreakdown.appendChild(pill);
+    });
+
+    // Table rows
+    advTableBody.innerHTML = '';
+    (data.results || []).forEach(r => {
+        const info = ADV_TYPE_LABELS[r.attack_type] || { label: r.attack_type, tag: '' };
+        const deltaClass = r.score_delta >= 0 ? 'adv-delta-pos' : 'adv-delta-neg';
+        const deltaSign = r.score_delta >= 0 ? '+' : '';
+        const evadedClass = r.evasion_success ? 'adv-evaded-yes' : 'adv-evaded-no';
+        const evadedText = r.evasion_success ? '✗ YES' : '✓ NO';
+
+        const notesHtml = (r.detection_notes || [])
+            .map(n => `<li>${escapeHtml(n)}</li>`)
+            .join('');
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><span class="adv-tag ${info.tag}">${info.label}</span></td>
+            <td style="max-width:200px;word-break:break-all;font-size:0.74rem;">${escapeHtml(r.variant_name)}</td>
+            <td style="font-family:var(--mono);">${(r.original_score * 100).toFixed(0)}%</td>
+            <td style="font-family:var(--mono);">${(r.adversarial_score * 100).toFixed(0)}%</td>
+            <td class="${deltaClass}" style="font-family:var(--mono);font-weight:700;">${deltaSign}${(r.score_delta * 100).toFixed(0)}%</td>
+            <td class="${evadedClass}">${evadedText}</td>
+            <td><ul class="adv-notes-list">${notesHtml}</ul></td>`;
+        advTableBody.appendChild(tr);
+    });
+
+    advResult.style.display = 'block';
+    advResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 // ---------- Event Listeners ----------
 analyzeBtn.addEventListener('click', analyze);
+advTestBtn.addEventListener('click', runAdversarialTest);
 exportJsonBtn.addEventListener('click', exportJson);
 clearHistoryBtn.addEventListener('click', clearHistory);
 

@@ -111,6 +111,7 @@ Most phishing detectors catch traditional, human-written phishing emails. This p
 | 6 | `header_analyzer.py` | 10% | SPF/DKIM/DMARC auth, Reply-To mismatch, Received chain hops, display-name spoofing, Return-Path mismatch | email.parser (stdlib) |
 | — | `ai_authorship.py` | — | Detects AI-generated email text (perplexity, burstiness) | Statistical NLP (dual output scorer) |
 | — | `xai_explainer.py` | — | Token attribution + human-readable risk explanations | DistilBERT attention + LOO perturbation + rule-based categories |
+| — | `adversarial_tester.py` | — | Evasion attack test suite — homoglyph, ZWC, URL obfuscation, prompt injection | Heuristic rules + DistilBERT re-scoring per variant |
 | — | `deep_router.py` | — | Combines all layers into weighted risk score | Weighted aggregation + boost logic |
 
 ---
@@ -175,7 +176,7 @@ Most phishing detectors catch traditional, human-written phishing emails. This p
 | AI Authorship Detection | Statistical NLP (perplexity + burstiness) | ✅ |
 | Explainable AI (XAI) | DistilBERT attention attribution + LOO perturbation + rule-based risk categories | ✅ |
 | Header Forensics | email.parser stdlib (SPF/DKIM/DMARC + display-name spoof + Return-Path) | ✅ |
-| Adversarial Robustness | Evasion attack test suite | ⬜ In Progress |
+| Adversarial Robustness | Homoglyph + ZWC + URL obfuscation + prompt-evasion test suite | ✅ |
 | Sender Reputation | SQLite reputation store + homoglyph scorer | ⬜ Planned |
 
 **Total Cost: ₹0**
@@ -239,12 +240,14 @@ Most phishing detectors catch traditional, human-written phishing emails. This p
 - [x] Added as Layer 6 (10% weight) in the weighted aggregator
 - [x] Frontend: Raw Headers textarea input, SPF/DKIM/DMARC auth badges, 📋 Headers layer card
 
-#### Priority 4 — Adversarial Robustness Testing
-- [ ] Test detection rate against homoglyph substitution attacks (`paypa1.com`)
-- [ ] Test against zero-width character injection in email body
-- [ ] Test against URL obfuscation (hex encoding, IP-based URLs, Unicode domains)
-- [ ] Test against prompt-style evasion in LLM-generated phishing text
-- [ ] Document detection rates before/after adversarial augmentation for paper
+#### Priority 4 — Adversarial Robustness Testing ✅
+- [x] Test detection rate against homoglyph substitution attacks (`paypa1.com`, Cyrillic lookalikes for 10 target brands)
+- [x] Test against zero-width character injection in email body (U+200B, U+200C, U+FEFF, U+2060)
+- [x] Test against URL obfuscation (hex encoding, IP-based URLs, Unicode IDN domains, @ trick, URL shorteners, subdomain deception)
+- [x] Test against prompt-style evasion in LLM-generated phishing text (8 evasion phrase patterns)
+- [x] Heuristic detection layer for each attack type (homoglyph brand scanner, ZWC detector, URL obfuscation rules, evasion phrase regex)
+- [x] `POST /api/v1/adversarial-test` endpoint — structured resilience report with per-variant results
+- [x] Frontend: ⚔️ Adversarial Robustness Test panel — resilience score, evasion rate, per-type breakdown pills, full results table
 
 #### Priority 5 — Sender Reputation & Behavioral Analysis
 - [ ] Build local reputation store (SQLite) for seen senders
@@ -284,15 +287,17 @@ Hybrid-AI-Defense/
 │   │   ├── visual_analyzer.py  # Fake login page detection
 │   │   ├── link_checker.py     # Recursive redirect analysis
 │   │   ├── header_analyzer.py  # SPF/DKIM/DMARC + Received chain (Layer 6)
+│   │   ├── adversarial_tester.py# Evasion attack suite (homoglyph, ZWC, URL obfusc, prompt)
 │   │   └── sender_reputation.py# Homoglyph scoring + local reputation store
 │   ├── services/
 │   │   ├── email_classifier.py # DistilBERT model service
 │   │   ├── ai_authorship.py    # AI-generated text detector (perplexity + burstiness)
 │   │   └── xai_explainer.py    # SHAP/LIME token attribution + risk explanations
 │   ├── routers/
-│   │   ├── email_router.py     # /analyze endpoint
-│   │   ├── url_router.py       # /analyze-url, /full-analyze
-│   │   └── deep_router.py      # /deep-analyze (5-layer)
+│   │   ├── email_router.py        # /analyze endpoint
+│   │   ├── url_router.py          # /analyze-url, /full-analyze
+│   │   ├── deep_router.py         # /deep-analyze (6-layer)
+│   │   └── adversarial_router.py  # /adversarial-test
 │   ├── models/
 │   │   └── schemas.py          # Pydantic request/response schemas
 │   ├── tests/                  # Pytest test suite
@@ -336,7 +341,7 @@ Hybrid-AI-Defense/
 7. **AI Authorship Detector** — Dual classifier: is_phishing + is_ai_generated ✅
 8. **Explainable AI (XAI)** — Token attribution + human-readable risk explanations ✅
 9. **Header Forensics Layer** — SPF/DKIM/DMARC + Received chain analysis (Layer 6) ✅
-10. **Adversarial Robustness Report** — Detection rates under evasion attacks ⬜
+10. **Adversarial Robustness Report** — Detection rates under evasion attacks ✅
 11. **Sender Reputation Store** — Homoglyph scoring + behavioral profiling ⬜
 12. **Paper** — Research paper for ICCCNT / ICACCS / IJERT ⬜
 
@@ -404,8 +409,9 @@ python -m http.server 3000
 | POST | `/api/v1/analyze-url` | URL static analysis (WHOIS, SSL, VT) |
 | POST | `/api/v1/full-analyze` | Text + URL analysis combined |
 | POST | `/api/v1/deep-analyze` | **Full 6-layer pipeline** (text + URL + crawl + visual + links + headers) |
+| POST | `/api/v1/adversarial-test` | **Adversarial robustness test** — homoglyph, ZWC, URL obfuscation, prompt-evasion variants |
 | GET | `/api/v1/health` | Health check |
 
 ---
 
-*Last Updated: April 7, 2026 — Added Email Header Forensics (Layer 6): SPF/DKIM/DMARC parsing, Reply-To/Return-Path mismatch, Received chain hop analysis, display-name spoofing, X-Mailer fingerprinting, date anomaly detection; 10% weight in aggregator; frontend auth badges + raw headers input*
+*Last Updated: April 8, 2026 — Added Adversarial Robustness Testing (Priority 4): homoglyph substitution (10 target brands, Cyrillic lookalikes), zero-width character injection (U+200B/200C/FEFF/2060), URL obfuscation (hex encoding, IP hosts, @ trick, IDN, shorteners, subdomain deception), prompt-style evasion (8 LLM classifier-bypass phrases); heuristic detection layer for each attack type; `POST /api/v1/adversarial-test` endpoint; frontend ⚔️ Adversarial Robustness panel with resilience score, evasion rate, per-type breakdown pills, full results table*

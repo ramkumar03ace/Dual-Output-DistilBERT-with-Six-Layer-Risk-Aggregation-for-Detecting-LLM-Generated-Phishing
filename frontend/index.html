@@ -374,6 +374,69 @@
             </div>
         </section>
 
+        <!-- ===== ADVERSARIAL ROBUSTNESS SECTION ===== -->
+        <section class="adv-section card" id="advSection">
+            <div class="card__title"><span class="icon">⚔️</span> Adversarial Robustness Test</div>
+            <p class="adv-desc">
+                Test detection resilience against known evasion techniques — homoglyph substitution,
+                zero-width character injection, URL obfuscation, and prompt-style evasion.
+                Uses the email body from the main input.
+            </p>
+            <button class="btn-adv" id="advTestBtn">
+                <span class="btn-text">⚔️ Run Adversarial Test</span>
+                <span class="spinner"></span>
+            </button>
+
+            <!-- Resilience result (hidden until test runs) -->
+            <div class="adv-result" id="advResult" style="display:none;">
+
+                <!-- Score row -->
+                <div class="adv-score-row">
+                    <div class="adv-score-block">
+                        <div class="adv-score-label">Resilience Score</div>
+                        <div class="adv-score-value" id="advResilienceScore">—</div>
+                    </div>
+                    <div class="adv-score-block">
+                        <div class="adv-score-label">Evasion Rate</div>
+                        <div class="adv-score-value adv-score-value--bad" id="advEvasionRate">—</div>
+                    </div>
+                    <div class="adv-score-block">
+                        <div class="adv-score-label">Tests Run</div>
+                        <div class="adv-score-value adv-score-value--neutral" id="advTotalTests">—</div>
+                    </div>
+                    <div class="adv-score-block">
+                        <div class="adv-score-label">Evaded</div>
+                        <div class="adv-score-value adv-score-value--bad" id="advEvaded">—</div>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="adv-summary" id="advSummary"></div>
+
+                <!-- Per-attack-type breakdown -->
+                <div class="adv-breakdown" id="advBreakdown"></div>
+
+                <!-- Individual results table -->
+                <div class="adv-results-title">Attack Variant Results</div>
+                <div class="adv-table-wrap">
+                    <table class="adv-table" id="advTable">
+                        <thead>
+                            <tr>
+                                <th>Attack Type</th>
+                                <th>Variant</th>
+                                <th>Orig Score</th>
+                                <th>Adv Score</th>
+                                <th>Delta</th>
+                                <th>Evaded?</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="advTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
         <!-- ===== HISTORY SECTION ===== -->
         <section class="history-section" id="historySection" style="display:none;">
             <div class="card">
@@ -460,6 +523,15 @@
                                 leave-one-out perturbation + human-readable risk explanation</div>
                         </div>
                         <div class="arch-step__weight arch-step__weight--xai">NEW</div>
+                    </div>
+                    <div class="arch-step arch-step--adv">
+                        <div class="arch-step__num">ADV</div>
+                        <div class="arch-step__info">
+                            <div class="arch-step__name">Adversarial Robustness Testing</div>
+                            <div class="arch-step__desc">Homoglyph substitution, zero-width injection, URL obfuscation,
+                                prompt-style evasion — resilience score + per-variant evasion report</div>
+                        </div>
+                        <div class="arch-step__weight arch-step__weight--adv">NEW</div>
                     </div>
                 </div>
             </div>

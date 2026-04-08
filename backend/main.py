@@ -13,6 +13,7 @@ from config import settings
 from routers import email_router
 from routers import url_router
 from routers import deep_router
+from routers import adversarial_router
 from services.email_classifier import classifier
 
 # Set up logging
@@ -85,6 +86,7 @@ app.mount("/screenshots", StaticFiles(directory=str(SCREENSHOTS_DIR)), name="scr
 app.include_router(email_router.router)
 app.include_router(url_router.router)
 app.include_router(deep_router.router)
+app.include_router(adversarial_router.router)
 
 
 @app.get("/")
