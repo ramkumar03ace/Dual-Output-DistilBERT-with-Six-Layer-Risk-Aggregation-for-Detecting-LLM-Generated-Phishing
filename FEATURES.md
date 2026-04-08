@@ -445,6 +445,16 @@ Prepends LLM-style classifier-bypass phrases before the email body.
 | `no (phishing\|threat\|risk)` | Explicit phishing denial in body |
 | `begin safe email` | Adversarial framing phrase |
 
+### Frontend UX:
+
+| Element | Behaviour |
+|---------|-----------|
+| **Run button state** | Disabled + `.loading` class while request in-flight; re-enabled in `finally` (always runs, even on error) |
+| **Spinner** | Orange CSS border-animation ring (18 × 18 px, `border-top-color: #ff6400`, `animation: spin 0.8s linear infinite`); hidden when idle, visible only in `.loading` state |
+| **Loading label** | `"Running tests… (may take ~30s)"` injected next to spinner; hidden on completion or error |
+| **Error display** | If `res.ok` is false, response body is parsed as JSON; `detail` field stringified with `JSON.stringify` if not already a string — prevents `[object Object]` toast when FastAPI returns a validation error array |
+| **Result panel** | Hidden (`display:none`) until a successful response; revealed with `scrollIntoView` smooth-scroll |
+
 ### Output schema:
 
 | Field | Type | Description |
@@ -592,7 +602,7 @@ See [Adversarial Robustness Testing](#12-adversarial-robustness-testing) → Out
 | Risk factors list | Deduplicated human-readable flags from all layers |
 | Analysis history | Last 10 analyses stored in localStorage, click to re-render |
 | JSON export | Download full result as timestamped `.json` file |
-| Adversarial Robustness panel | ⚔️ Run button → resilience score, evasion rate, breakdown pills per attack type, full results table with score delta and detection notes |
+| Adversarial Robustness panel | ⚔️ Run button → resilience score, evasion rate, breakdown pills per attack type, full results table with score delta and detection notes; animated spinner + "Running tests… (may take ~30s)" loading state; structured error display (FastAPI validation errors stringified, not `[object Object]`) |
 | Architecture diagram | Inline pipeline visualization with weights (includes ADV step) |
 | API status chip | Live health check on load |
 
@@ -647,4 +657,4 @@ See [Adversarial Robustness Testing](#12-adversarial-robustness-testing) → Out
 
 ---
 
-*Last Updated: April 8, 2026 — Added Section 12: Adversarial Robustness Testing (homoglyph, ZWC, URL obfuscation, prompt-evasion); updated API endpoints table, frontend features table, and summary counts*
+*Last Updated: April 8, 2026 — Added Section 12: Adversarial Robustness Testing (homoglyph, ZWC, URL obfuscation, prompt-evasion); updated API endpoints table, frontend features table, and summary counts. Added Section 12 Frontend UX table: spinner fix, loading label, and structured error handling (`[object Object]` → readable FastAPI detail)*

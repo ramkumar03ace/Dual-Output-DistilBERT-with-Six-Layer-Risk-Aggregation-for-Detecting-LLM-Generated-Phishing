@@ -1950,8 +1950,17 @@ body {
 }
 
 .btn-adv.loading .btn-text { display: none; }
-.btn-adv.loading .spinner { display: block; }
-.btn-adv .spinner { display: none; }
+.btn-adv.loading .spinner { display: inline-block; }
+.btn-adv .spinner {
+  display: none;
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 100, 0, 0.2);
+  border-top-color: #ff6400;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto;
+}
 
 /* Architecture step */
 .arch-step--adv .arch-step__num {

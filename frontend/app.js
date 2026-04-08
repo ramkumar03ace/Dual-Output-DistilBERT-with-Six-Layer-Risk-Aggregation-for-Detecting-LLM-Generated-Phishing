@@ -934,6 +934,7 @@ async function runAdversarialTest() {
 
     advTestBtn.classList.add('loading');
     advTestBtn.disabled = true;
+    advTestBtn.querySelector('.btn-loading-text').style.display = 'inline';
     advResult.style.display = 'none';
 
     try {
@@ -947,8 +948,9 @@ async function runAdversarialTest() {
         });
 
         if (!res.ok) {
-            const err = await res.json().catch(() => ({ detail: res.statusText }));
-            throw new Error(err.detail || `HTTP ${res.status}`);
+            const errBody = await res.json().catch(() => ({ detail: res.statusText }));
+            const detail = typeof errBody.detail === 'string' ? errBody.detail : JSON.stringify(errBody.detail);
+            throw new Error(detail || `HTTP ${res.status}`);
         }
 
         const data = await res.json();
@@ -960,6 +962,7 @@ async function runAdversarialTest() {
     } finally {
         advTestBtn.classList.remove('loading');
         advTestBtn.disabled = false;
+        advTestBtn.querySelector('.btn-loading-text').style.display = 'none';
     }
 }
 
