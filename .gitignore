@@ -40,3 +40,6 @@ model/saved_models/*/model.safetensors
 
 # model zip files
 *.zip
+
+# Crawled screenshots (runtime artifacts)
+backend/screenshots/*.png

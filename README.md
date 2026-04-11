@@ -254,9 +254,6 @@ Evasion is only successful when BOTH the classifier is fooled AND the heuristic 
 ```
 Hybrid-AI-Defense/
 ├── README.md
-├── FEATURES.md                  # Complete feature & threshold reference
-├── IEEE_Paper_Technical_Summary.md
-├── tech-stack.md
 │
 ├── data/
 │   ├── raw/                     # Original datasets
@@ -435,7 +432,6 @@ python -m http.server 3000
 | [`docs/tech-stack.md`](docs/tech-stack.md) | Detailed technology stack |
 | [`docs/error-handling.md`](docs/error-handling.md) | Layer failure modes & graceful degradation |
 | [`docs/paper-draft.md`](docs/paper-draft.md) | Research paper draft |
-| [`FEATURES.md`](FEATURES.md) | Complete feature & threshold reference |
 
 ---
 

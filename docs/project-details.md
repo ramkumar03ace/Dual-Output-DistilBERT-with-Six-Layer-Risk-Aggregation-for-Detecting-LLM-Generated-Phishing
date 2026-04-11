@@ -176,9 +176,6 @@ The entire system is built using free, open-source tools and APIs.
 ```
 Hybrid-AI-Defense/
 ├── README.md                    # Project overview, timeline, architecture
-├── FEATURES.md                  # Complete feature & value reference (all thresholds)
-├── IEEE_Paper_Technical_Summary.md  # Technical summary for paper
-├── tech-stack.md                # Detailed dependency versions & status
 │
 ├── data/
 │   ├── raw/                     # Original datasets
