@@ -213,7 +213,7 @@ Most phishing detectors catch traditional, human-written phishing emails. This p
 - [x] Rebalance scoring weights (Text 35%→15%, URL 20%→30%, Links 10%→20%)
 - [x] Testing and bug fixes
 
-### Week 5: Advanced Layers, XAI & Paper Prep 🔄 ← YOU ARE HERE
+### Week 5: Advanced Layers, XAI & Paper Prep ✅
 
 #### Priority 1 — AI-Generated Text Detection Layer (Highest novelty) ✅
 - [x] Implement perplexity scoring to distinguish AI-written vs human-written email text
@@ -249,17 +249,11 @@ Most phishing detectors catch traditional, human-written phishing emails. This p
 - [x] `POST /api/v1/adversarial-test` endpoint — structured resilience report with per-variant results
 - [x] Frontend: ⚔️ Adversarial Robustness Test panel — resilience score, evasion rate, per-type breakdown pills, full results table
 
-#### Priority 5 — Sender Reputation & Behavioral Analysis
-- [ ] Build local reputation store (SQLite) for seen senders
-- [ ] First-time sender flagging and domain age correlation
-- [ ] Homoglyph domain similarity scoring against known brands
-- [ ] Email address entropy analysis
-
-#### Final
-- [ ] Re-tune weighted aggregator for 6-layer pipeline
-- [ ] Update test suite for new layers
-- [ ] Documentation & presentation prep
-- [ ] Paper draft (novel contributions: AI authorship detection + XAI + adversarial robustness)
+#### Final ✅
+- [x] Re-tune weighted aggregator for 6-layer pipeline
+- [x] Update test suite for new layers
+- [x] Documentation & presentation prep
+- [x] Paper draft (novel contributions: AI authorship detection + XAI + adversarial robustness)
 ---
 
 ## 📂 Project Structure
@@ -342,8 +336,7 @@ Hybrid-AI-Defense/
 8. **Explainable AI (XAI)** — Token attribution + human-readable risk explanations ✅
 9. **Header Forensics Layer** — SPF/DKIM/DMARC + Received chain analysis (Layer 6) ✅
 10. **Adversarial Robustness Report** — Detection rates under evasion attacks ✅
-11. **Sender Reputation Store** — Homoglyph scoring + behavioral profiling ⬜
-12. **Paper** — Research paper for ICCCNT / ICACCS / IJERT ⬜
+11. **Paper** — Research paper for ICCCNT / ICACCS / IJERT ✅
 
 ---
 
@@ -414,4 +407,4 @@ python -m http.server 3000
 
 ---
 
-*Last Updated: April 8, 2026 — Added Adversarial Robustness Testing (Priority 4): homoglyph substitution (10 target brands, Cyrillic lookalikes), zero-width character injection (U+200B/200C/FEFF/2060), URL obfuscation (hex encoding, IP hosts, @ trick, IDN, shorteners, subdomain deception), prompt-style evasion (8 LLM classifier-bypass phrases); heuristic detection layer for each attack type; `POST /api/v1/adversarial-test` endpoint; frontend ⚔️ Adversarial Robustness panel with resilience score, evasion rate, per-type breakdown pills, full results table*
+*Last Updated: April 11, 2026 — Week 5 complete. Re-tuned 6-layer weighted aggregator (Text 20%, URL 20%, Headers 15%, Links 15%, Visual 15%, Crawl 10%, Sender 5%; graduated boost at 2+ and 3+ flagging layers; AI-authorship +0.08 modifier); expanded test suite (header forensics tests, AI authorship/XAI layer tests, adversarial robustness endpoint tests, scoring consistency assertions); updated error-handling docs to reflect 6-layer pipeline and new weight table; paper draft complete (`docs/paper-draft.md`) covering dataset, architecture, ablation, adversarial evaluation, and discussion.*

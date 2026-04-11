@@ -368,66 +368,95 @@ async def deep_analysis(request: DeepAnalysisRequest):
             analysis_layers.append("header_forensics")
 
         # ==========================================
-        # COMBINED SCORING — Dynamic Weight Redistribution
+        # COMBINED SCORING — 6-Layer Dynamic Weight Redistribution
         # ==========================================
-        # Base weights (when all layers are active):
-        #   Text:   15%
-        #   URL:    25%
-        #   Crawl:  10%
-        #   Visual: 20%
-        #   Links:  20%
+        # Calibrated base weights for the full 6-layer pipeline:
+        #   Text (DistilBERT):  20%  ← primary ML signal
+        #   URL analysis:       20%  ← domain/SSL/VT intelligence
+        #   Headers (forensics):15%  ← SPF/DKIM/DMARC + spoofing
+        #   Links:              15%  ← redirect chain analysis
+        #   Visual:             15%  ← fake login / brand impersonation
+        #   Crawl:              10%  ← live page inspection
+        #   Sender:              5%  ← homoglyph + display-name
+        #                      ---
+        #                      100%  (no reserved headroom — boost is additive)
         #
-        # When a layer is disabled/skipped, its weight is
-        # redistributed proportionally among active layers.
+        # AI authorship is a signal modifier, not a primary layer:
+        #   confirmed AI-generated phishing → +0.08 to combined risk
+        #
+        # Boost logic (additive, capped at 1.0):
+        #   ≥ 2 layers flagged → +0.10
+        #   ≥ 3 layers flagged → additional +0.05 (total +0.15)
+        #
+        # When a layer is absent, its weight is redistributed
+        # proportionally among active layers so scores stay comparable.
+
         text_risk = confidence if is_phishing else (1 - confidence)
-        
-        # Build active layers with their base weights
-        active_scores = {}
-        active_scores["text"] = (text_risk, 0.15)
-        
-        if sender_schema:
-            active_scores["sender"] = (sender_risk, 0.10)
-        
+
+        # Base weights per layer (must sum to 1.0)
+        BASE_WEIGHTS = {
+            "text":    0.20,
+            "url":     0.20,
+            "headers": 0.15,
+            "links":   0.15,
+            "visual":  0.15,
+            "crawl":   0.10,
+            "sender":  0.05,
+        }
+
+        # Collect only active layers
+        active_scores: dict = {}
+        active_scores["text"] = (text_risk, BASE_WEIGHTS["text"])
+
         if url_response:
-            active_scores["url"] = (max_url_risk, 0.25)
-        
-        if crawl_schemas:
-            active_scores["crawl"] = (crawl_risk, 0.10)
-        
-        if visual_schemas:
-            active_scores["visual"] = (max_visual_risk, 0.20)
-        
-        if link_schema:
-            active_scores["links"] = (link_risk, 0.20)
+            active_scores["url"] = (max_url_risk, BASE_WEIGHTS["url"])
 
         if header_schema:
-            active_scores["headers"] = (header_risk, 0.10)
-        
-        # Normalize weights so they sum to ~0.90 (matching original total)
-        # then compute weighted sum
+            active_scores["headers"] = (header_risk, BASE_WEIGHTS["headers"])
+
+        if link_schema:
+            active_scores["links"] = (link_risk, BASE_WEIGHTS["links"])
+
+        if visual_schemas:
+            active_scores["visual"] = (max_visual_risk, BASE_WEIGHTS["visual"])
+
+        if crawl_schemas:
+            active_scores["crawl"] = (crawl_risk, BASE_WEIGHTS["crawl"])
+
+        if sender_schema:
+            active_scores["sender"] = (sender_risk, BASE_WEIGHTS["sender"])
+
+        # Normalise weights of active layers so they sum to 1.0
         total_base_weight = sum(w for _, w in active_scores.values())
-        
         if total_base_weight > 0:
             combined_risk = sum(
-                score * (weight / total_base_weight * 0.90)
+                score * (weight / total_base_weight)
                 for score, weight in active_scores.values()
             )
         else:
-            combined_risk = text_risk * 0.90
-        
-        # Boost if multiple layers flag it (2+ layers = +0.15)
+            combined_risk = text_risk
+
+        # AI authorship modifier: confirmed AI-generated phishing adds signal
+        if ai_result.is_ai_generated and is_phishing:
+            combined_risk = min(1.0, combined_risk + 0.08)
+
+        # Count how many distinct layers are flagging
         flagging_layers = sum([
             is_phishing,
-            sender_risk >= 0.30 if sender_schema else False,
-            max_url_risk >= 0.30 if url_response else False,
-            crawl_risk >= 0.40 if crawl_schemas else False,
-            max_visual_risk >= 0.40 if visual_schemas else False,
-            link_risk >= 0.30 if link_schema else False,
+            max_url_risk >= 0.35 if url_response else False,
             header_risk >= 0.25 if header_schema else False,
+            link_risk >= 0.30 if link_schema else False,
+            max_visual_risk >= 0.40 if visual_schemas else False,
+            crawl_risk >= 0.40 if crawl_schemas else False,
+            sender_risk >= 0.30 if sender_schema else False,
         ])
-        if flagging_layers >= 2:
+
+        # Graduated boost: 2 layers → +0.10, 3+ layers → +0.15
+        if flagging_layers >= 3:
             combined_risk = min(1.0, combined_risk + 0.15)
-        
+        elif flagging_layers >= 2:
+            combined_risk = min(1.0, combined_risk + 0.10)
+
         # Determine verdict
         if combined_risk >= 0.65:
             verdict = "PHISHING"
