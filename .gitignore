@@ -43,3 +43,6 @@ model/saved_models/*/model.safetensors
 
 # Crawled screenshots (runtime artifacts)
 backend/screenshots/*.png
+
+#.md file
+docs/presentation-qa.md
