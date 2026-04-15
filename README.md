@@ -1,4 +1,4 @@
-# 🛡️ Hybrid AI Defense — Closing the Detection Gap Against AI-Generated Phishing
+# 🛡️ Dual-Output DistilBERT with Six-Layer Risk Aggregation for Detecting LLM-Generated Phishing
 
 > A **6-layer + 2 auxiliary** hybrid detection pipeline that combines NLP, URL intelligence, web crawling, visual analysis, link checking, email header forensics, AI authorship detection, and Explainable AI — purpose-built to catch AI-generated phishing emails that bypass traditional filters.
 
