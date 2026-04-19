@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Dual-Output DistilBERT Phishing Scanner",
+  "name": "Hybrid AI Defense — Phishing Scanner",
   "version": "1.0.0",
-  "description": "Scan emails for AI-generated phishing using a 6-layer + 2 auxiliary hybrid pipeline: NLP, URL intelligence, web crawling, visual analysis, link checking, and header forensics.",
+  "description": "Scan emails for AI-generated phishing using 5-layer deep analysis: NLP, URL intelligence, web crawling, visual detection, and link checking.",
   "permissions": [
     "activeTab",
     "scripting"
@@ -18,7 +18,7 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     },
-    "default_title": "Dual-Output DistilBERT — Scan for Phishing"
+    "default_title": "Hybrid AI Defense — Scan for Phishing"
   },
   "icons": {
     "16": "icons/icon16.png",

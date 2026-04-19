@@ -435,4 +435,4 @@ python -m http.server 3000
 
 ---
 
-*Built with ❤️ at VIT Vellore · April 2026 (Updated April 19)*
+*Built with ❤️ at VIT Vellore · April 2026*

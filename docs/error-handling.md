@@ -1,4 +1,4 @@
-# 🛡️ Dual-Output DistilBERT — Error Handling & Graceful Degradation
+# Error Handling & Graceful Degradation
 
 How each detection layer handles failures, and what happens when things go wrong.
 
