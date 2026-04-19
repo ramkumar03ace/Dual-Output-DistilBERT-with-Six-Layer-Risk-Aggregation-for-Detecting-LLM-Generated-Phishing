@@ -5,7 +5,7 @@ This script:
      standard schemas.openxmlformats.org ones so python-docx can open it.
   2. Clears the template body but preserves the styles (paper title, Abstract,
      Heading 1/2/3, etc.) and section settings (A4 + 2 columns).
-  3. Writes the Hybrid AI Defense paper content using those styles.
+  3. Writes the Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing paper content using those styles.
 """
 import os
 import shutil
@@ -20,7 +20,7 @@ from docx.shared import Pt
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "conference-template-a4.docx")
-DST = os.path.join(ROOT, "docs", "ieee-paper-hybrid-ai-defense.docx")
+DST = os.path.join(ROOT, "docs", "ieee-paper-Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing.docx")
 
 NS_REPLACEMENTS = [
     (b"http://purl.oclc.org/ooxml/officeDocument/relationships",
@@ -285,7 +285,7 @@ def build_paper():
         "language models (LLMs). AI-generated phishing emails exhibit low "
         "perplexity, high formality, and uniform sentence structure, which "
         "help them evade traditional keyword-based and machine-learning "
-        "classifiers. We present Hybrid AI Defense, a multi-layer phishing "
+        "classifiers. We present Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing, a multi-layer phishing "
         "detection system that combines a fine-tuned DistilBERT classifier "
         "(99.17% accuracy on a mixed human and LLM dataset), a statistical "
         "AI-authorship detector, email header forensics, URL and domain "
@@ -511,7 +511,7 @@ def build_paper():
 
     add_image_placeholder(
         doc,
-        "Figure 2. System architecture of Hybrid AI Defense: six scored "
+        "Figure 2. System architecture of Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing: six scored "
         "layers (text, URL, crawl, visual, link, header) feed a weighted "
         "risk aggregator, with AI-authorship and XAI modules acting as "
         "signal modifiers and explanation providers.",
@@ -855,7 +855,7 @@ def build_paper():
     add_para(doc, "Conclusion and Future Work", "Heading 1")
     add_para(
         doc,
-        "We presented Hybrid AI Defense, a six-layer phishing detection "
+        "We presented Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing, a six-layer phishing detection "
         "system specifically designed to close the detection gap against "
         "AI-generated phishing emails. Our key contributions -- a novel "
         "LLM-generated phishing dataset, a dual-output DistilBERT "

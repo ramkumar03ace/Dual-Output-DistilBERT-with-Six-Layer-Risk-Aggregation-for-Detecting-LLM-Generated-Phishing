@@ -1,4 +1,4 @@
-# Hybrid AI Defense: Closing the Detection Gap Against AI-Generated Phishing
+# Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing: Closing the Detection Gap Against AI-Generated Phishing
 
 **Draft for:** ICCCNT / ICACCS / IJERT  
 **Author:** Ramkumar, B.Tech CSE, VIT Vellore  
@@ -8,7 +8,7 @@
 
 ## Abstract
 
-Phishing detection systems trained exclusively on human-authored emails are increasingly vulnerable to attacks crafted by large language models (LLMs). AI-generated phishing emails exhibit low perplexity, high formality, and uniform sentence structure — properties that help them evade traditional keyword-based and ML classifiers. We present **Hybrid AI Defense**, a multi-layer phishing detection system that combines a fine-tuned DistilBERT classifier (99.17% accuracy on a mixed human+LLM dataset), AI authorship detection, email header forensics, URL/domain intelligence, web crawling, visual brand-impersonation analysis, and recursive link checking into a unified 6-layer weighted risk aggregator. We further introduce an adversarial robustness evaluation framework covering homoglyph substitution, zero-width character injection, URL obfuscation, and prompt-style evasion. Our system provides explainable AI (XAI) output via token-level attribution and risk category detection. Experiments show that our dual-output classifier (phishing probability + AI authorship score) significantly improves detection of LLM-generated phishing that evades single-layer systems.
+Phishing detection systems trained exclusively on human-authored emails are increasingly vulnerable to attacks crafted by large language models (LLMs). AI-generated phishing emails exhibit low perplexity, high formality, and uniform sentence structure — properties that help them evade traditional keyword-based and ML classifiers. We present **Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing**, a multi-layer phishing detection system that combines a fine-tuned DistilBERT classifier (99.17% accuracy on a mixed human+LLM dataset), AI authorship detection, email header forensics, URL/domain intelligence, web crawling, visual brand-impersonation analysis, and recursive link checking into a unified 6-layer weighted risk aggregator. We further introduce an adversarial robustness evaluation framework covering homoglyph substitution, zero-width character injection, URL obfuscation, and prompt-style evasion. Our system provides explainable AI (XAI) output via token-level attribution and risk category detection. Experiments show that our dual-output classifier (phishing probability + AI authorship score) significantly improves detection of LLM-generated phishing that evades single-layer systems.
 
 **Keywords:** phishing detection, AI-generated phishing, LLM threats, DistilBERT, explainable AI, adversarial robustness, email header forensics, multi-layer defense
 
@@ -253,7 +253,7 @@ XAI output is critical for analyst trust and incident response. By surfacing whi
 
 ## 8. Conclusion
 
-We presented Hybrid AI Defense, a 6-layer phishing detection system specifically designed to close the detection gap against AI-generated phishing. Our key contributions — a novel LLM-generated phishing dataset, a dual-output DistilBERT classifier, AI authorship detection, header forensics, XAI attribution, and an adversarial robustness evaluation framework — together address the most pressing gaps in current phishing defense.
+We presented Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing, a 6-layer phishing detection system specifically designed to close the detection gap against AI-generated phishing. Our key contributions — a novel LLM-generated phishing dataset, a dual-output DistilBERT classifier, AI authorship detection, header forensics, XAI attribution, and an adversarial robustness evaluation framework — together address the most pressing gaps in current phishing defense.
 
 The system is fully open-source, requires no paid services beyond an optional VirusTotal API key, and deploys as a FastAPI backend with a web dashboard and Chrome extension for Gmail.
 

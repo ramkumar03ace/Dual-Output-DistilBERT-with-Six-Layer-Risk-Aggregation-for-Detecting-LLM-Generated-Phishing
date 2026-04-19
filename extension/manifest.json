@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Hybrid AI Defense — Phishing Scanner",
+  "name": "Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing — Phishing Scanner",
   "version": "1.0.0",
   "description": "Scan emails for AI-generated phishing using 5-layer deep analysis: NLP, URL intelligence, web crawling, visual detection, and link checking.",
   "permissions": [
@@ -18,7 +18,7 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     },
-    "default_title": "Hybrid AI Defense — Scan for Phishing"
+    "default_title": "Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing — Scan for Phishing"
   },
   "icons": {
     "16": "icons/icon16.png",

@@ -1,4 +1,4 @@
-# 🛡️ Hybrid AI Defense — Complete Project Documentation (A to Z)
+# 🛡️ Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing — Complete Project Documentation (A to Z)
 
 > **Author:** Ramkumar · VIT Vellore (B.Tech CSE)  
 > **Timeline:** 5 Weeks · 5 Credits  
@@ -46,7 +46,7 @@
 
 ## 1. Project Overview
 
-**Hybrid AI Defense** is a comprehensive, multi-layer phishing detection system that goes beyond simple text analysis to detect both traditional human-written and modern AI-generated phishing emails.
+**Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing** is a comprehensive, multi-layer phishing detection system that goes beyond simple text analysis to detect both traditional human-written and modern AI-generated phishing emails.
 
 ### Problem Statement
 
@@ -1434,7 +1434,7 @@ A Chrome Manifest V3 extension that integrates directly with Gmail for real-time
 | Property | Value |
 |----------|-------|
 | `manifest_version` | 3 |
-| `name` | "Hybrid AI Defense — Phishing Scanner" |
+| `name` | "Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing — Phishing Scanner" |
 | `version` | "1.0.0" |
 | `permissions` | `activeTab`, `scripting` |
 | `host_permissions` | `https://mail.google.com/*`, `http://localhost:8001/*` |

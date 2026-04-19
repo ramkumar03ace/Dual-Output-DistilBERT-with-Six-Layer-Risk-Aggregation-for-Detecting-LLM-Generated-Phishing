@@ -1,5 +1,5 @@
 /* ============================================
-   Hybrid AI Defense — Extension Popup Logic
+   Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing — Extension Popup Logic
    Connects to backend /deep-analyze endpoint
    ============================================ */
 

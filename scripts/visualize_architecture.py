@@ -81,7 +81,7 @@ draw_arrow(ax, 50, 30, 50, 22)
 
 draw_box(ax, 38, 14, 24, 8, "Final Verdict\n(Phishing / Suspicious / Safe)", facecolor='#FFF9C4', weight='bold')
 
-plt.title("System Architecture of Hybrid AI Defense", y=0.98, fontsize=11, fontweight='bold')
+plt.title("System Architecture of Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing", y=0.98, fontsize=11, fontweight='bold')
 plt.tight_layout()
 
 # Save

@@ -1,5 +1,5 @@
 /* ============================================
-   HYBRID AI DEFENSE — Frontend Logic
+   Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing — Frontend Logic
    ============================================ */
 
 const API_BASE = 'http://localhost:8001/api/v1';
