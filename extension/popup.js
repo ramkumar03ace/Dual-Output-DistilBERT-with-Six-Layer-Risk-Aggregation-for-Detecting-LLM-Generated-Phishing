@@ -12,6 +12,7 @@ const extractBtn = $('#extractBtn');
 const analyzeBtn = $('#analyzeBtn');
 const emailInput = $('#emailInput');
 const subjectInput = $('#subjectInput');
+const rawHeadersInput = $('#rawHeadersInput');
 const crawlToggle = $('#crawlToggle');
 const screenshotToggle = $('#screenshotToggle');
 const resultsSection = $('#resultsSection');
@@ -570,6 +571,7 @@ async function analyze() {
             crawl_urls: crawlToggle.checked,
             take_screenshots: screenshotToggle.checked,
             sender_info: extractedHeaders || null,
+            raw_headers: rawHeadersInput?.value?.trim() || null,
         };
 
         const res = await fetch(`${API_BASE}/deep-analyze`, {

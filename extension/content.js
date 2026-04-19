@@ -92,9 +92,21 @@
         };
 
         try {
+            // Target the currently active open email container
+            let activeContainer = document;
+            const bodySelectors = ['div.a3s.aiL', 'div.ii.gt div.a3s', 'div[data-message-id] div.a3s'];
+            for (const sel of bodySelectors) {
+                const elements = Array.from(document.querySelectorAll(sel)).filter(el => el.offsetWidth > 0 && el.offsetHeight > 0);
+                if (elements.length > 0) {
+                    const el = elements[elements.length - 1];
+                    activeContainer = el.closest('div[data-message-id]') || el.closest('div.adn') || el.closest('div.h7') || document;
+                    break;
+                }
+            }
+
             // --- FROM: sender name and email ---
             // Gmail shows sender in a span with class 'gD' (name) and email attribute
-            const senderEls = document.querySelectorAll('span.gD[email], span[email]');
+            const senderEls = activeContainer.querySelectorAll('span.gD[email], span[email]');
             for (const el of senderEls) {
                 const em = el.getAttribute('email');
                 if (em && em.includes('@')) {
@@ -105,10 +117,8 @@
             }
 
             // --- CLICK 'SHOW DETAILS' IF NEEDED ---
-            // Gmail puts mailed-by/signed-by inside a table/div that loads when you click "Show details"
-            
-            // Look for the arrow dropdown button
-            const arrowBtns = document.querySelectorAll('[data-tooltip="Show details"], [aria-label="Show details"], img.ajz, div.ajy');
+            // Look for the arrow dropdown button within the active container
+            const arrowBtns = activeContainer.querySelectorAll('[data-tooltip="Show details"], [aria-label="Show details"], img.ajz, div.ajy');
             for (const btn of arrowBtns) {
                 if (btn && btn.offsetParent !== null) { // if visible
                     simulateClick(btn);
@@ -118,8 +128,8 @@
             }
 
             // --- EXTRACT MAILED-BY, SIGNED-BY, SECURITY ---
-            // 1. Look for typical Gmail header tables (usually a <table> with class gK or similar)
-            const allTds = document.querySelectorAll('td');
+            // 1. Look for typical Gmail header tables
+            const allTds = activeContainer.querySelectorAll('td');
             allTds.forEach(td => {
                 const text = (td.textContent || '').trim().toLowerCase();
                 const nextTd = td.nextElementSibling;
@@ -139,7 +149,7 @@
 
             // 2. Fallback: Parse visible text in the expanded header area
             if (!headers.mailed_by || !headers.signed_by) {
-                const headerAreas = document.querySelectorAll('div.gE.iv.gt, div[data-message-id] table.gH, table');
+                const headerAreas = activeContainer.querySelectorAll('div.gE.iv.gt, div[data-message-id] table.gH, table');
                 for (const area of headerAreas) {
                     const html = area.innerHTML;
                     
@@ -150,7 +160,7 @@
                     if (!headers.signed_by) {
                         const signedMatch = html.match(/>\s*signed-by\s*[<:\s]+.*?>(.*?)<\//i) || area.innerText.match(/signed-by:\s*([^\n]+)/i);
                         if (signedMatch) headers.signed_by = signedMatch[1].trim();
-                    }
+                     }
                     if (!headers.security) {
                         const secMatch = html.match(/>\s*security\s*[<:\s]+.*?>(.*?)<\//i) || area.innerText.match(/security:\s*(.*?)(?:\n|$)/i);
                         if (secMatch) headers.security = secMatch[1].replace(/<[^>]*>?/gm, '').trim();
@@ -158,9 +168,9 @@
                 }
             }
 
-            // 3. Ultimate Fallback: Scrape all spans on the entire page
+            // 3. Ultimate Fallback: Scrape all spans within the active container
             if (!headers.mailed_by && !headers.signed_by) {
-                const allSpans = document.querySelectorAll('span');
+                const allSpans = activeContainer.querySelectorAll('span');
                 for (let i = 0; i < allSpans.length; i++) {
                     const text = allSpans[i].textContent.trim().toLowerCase();
                     if ((text === 'mailed-by:' || text === 'mailed-by') && allSpans[i+1]) {
