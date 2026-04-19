@@ -38,7 +38,7 @@ def fix_multiline_csv(input_path, output_path):
     return df
 
 def main():
-    base_dir = r"d:\VIT\VIT Sem 8\Sem Project 2\Hybrid-AI-Defense-Closing-the-Detection-Gap-Against-AI-Generated-Phishing\data\raw\human-generated"
+    base_dir = r"d:\VIT\VIT Sem 8\Sem Project 2\Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing\data\raw\human-generated"
     
     # Files to process
     files = [

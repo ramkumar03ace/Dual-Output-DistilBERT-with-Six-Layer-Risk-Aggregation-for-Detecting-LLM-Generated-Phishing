@@ -1,4 +1,4 @@
-# 🛠️ Tech Stack — Hybrid AI Defense
+# 🛠️ Tech Stack — Dual-Output DistilBERT Phishing Detection
 
 > Complete technology stack used across all components of the project.
 

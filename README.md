@@ -252,7 +252,7 @@ Evasion is only successful when BOTH the classifier is fooled AND the heuristic 
 ## 📂 Project Structure
 
 ```
-Hybrid-AI-Defense/
+Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing/
 ├── README.md
 │
 ├── data/
@@ -325,8 +325,8 @@ Hybrid-AI-Defense/
 ### 1. Setup Backend
 
 ```bash
-git clone https://github.com/ramkumar03ace/Hybrid-AI-Defense-Closing-the-Detection-Gap-Against-AI-Generated-Phishing.git
-cd Hybrid-AI-Defense-Closing-the-Detection-Gap-Against-AI-Generated-Phishing
+git clone https://github.com/ramkumar03ace/Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing.git
+cd Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing
 
 python -m venv .venv
 .venv\Scripts\activate         # Windows
@@ -435,4 +435,4 @@ python -m http.server 3000
 
 ---
 
-*Built with ❤️ at VIT Vellore · April 2026*
+*Built with ❤️ at VIT Vellore · April 2026 (Updated April 19)*

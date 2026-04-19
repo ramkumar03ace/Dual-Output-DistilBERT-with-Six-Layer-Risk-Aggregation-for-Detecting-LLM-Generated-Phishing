@@ -2,7 +2,7 @@
 
 > **Author:** Ramkumar · VIT Vellore (B.Tech CSE)  
 > **Timeline:** 5 Weeks · 5 Credits  
-> **Last Updated:** April 11, 2026
+> **Last Updated:** April 19, 2026
 
 ---
 
@@ -174,7 +174,7 @@ The entire system is built using free, open-source tools and APIs.
 ## 3. Project Structure
 
 ```
-Hybrid-AI-Defense/
+Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing/
 ├── README.md                    # Project overview, timeline, architecture
 │
 ├── data/
@@ -263,8 +263,8 @@ Hybrid-AI-Defense/
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/ramkumar03ace/Hybrid-AI-Defense-Closing-the-Detection-Gap-Against-AI-Generated-Phishing.git
-cd Hybrid-AI-Defense-Closing-the-Detection-Gap-Against-AI-Generated-Phishing
+git clone https://github.com/ramkumar03ace/Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing.git
+cd Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing
 ```
 
 ### Step 2: Create Virtual Environment

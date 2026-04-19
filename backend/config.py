@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     
     # API Settings
     API_V1_PREFIX: str = "/api/v1"
-    PROJECT_NAME: str = "Phishing Detection API"
+    PROJECT_NAME: str = "Dual-Output DistilBERT Phishing Detection API"
     VERSION: str = "1.0.0"
     DEBUG: bool = False
     
