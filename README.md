@@ -15,6 +15,8 @@ As Large Language Models (LLMs) become more accessible, AI-generated phishing em
 
 ## 💡 Solution
 
+![Hybrid AI Defense Dashboard](docs/ss/Screenshot%202026-04-15%20180307.png)
+
 A multi-modal, multi-layer detection system that analyzes emails across **7 weighted dimensions** + 2 auxiliary modules:
 
 | # | Layer | Weight | What It Does |
@@ -119,6 +121,8 @@ A multi-modal, multi-layer detection system that analyzes emails across **7 weig
 
 ## 🔍 Detection Layers — Detailed
 
+![Multi-Layer Analysis](docs/ss/Screenshot%202026-04-15%20174545.png)
+
 ### Layer 1: Text Classification (DistilBERT) — 20%
 
 | Property | Value |
@@ -155,6 +159,8 @@ Follows up to 20 links recursively, tracks redirect chains, detects domain chang
 
 ### AI Authorship Detection (Auxiliary)
 
+![AI Authorship Detection](docs/ss/Screenshot%202026-04-15%20173010.png)
+
 5 statistical NLP signals with weighted scoring:
 
 | Signal | Weight | AI Pattern |
@@ -168,6 +174,8 @@ Follows up to 20 links recursively, tracks redirect chains, detects domain chang
 Threshold: `≥ 0.55` → AI-generated. Monitors 29 formal connectors + 12 urgency phrases.
 
 ### Explainable AI / XAI (Auxiliary)
+
+![Explainable AI Attribution](docs/ss/Screenshot%202026-04-15%20173023.png)
 
 3 attribution techniques: DistilBERT attention (60%) + rule-based pattern scoring (40%) + Leave-One-Out perturbation. Detects 6 risk categories: urgency, credential request, threat, reward, brand impersonation, suspicious URL. Produces token-level highlights and human-readable explanations.
 
