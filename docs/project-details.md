@@ -181,7 +181,8 @@ Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generat
 │   ├── raw/                     # Original datasets
 │   │   ├── human-generated/     # Human phishing + legit emails
 │   │   └── llm-generated/       # AI-generated phishing + legit
-│   └── processed/               # Cleaned data (CSV)
+│   ├── processed/               # Cleaned data (CSV)
+│   └── processed_v2/            # Cleaned data V2 (CSV)
 │
 ├── backend/
 │   ├── main.py                  # FastAPI app entry point + lifespan
@@ -240,14 +241,32 @@ Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generat
 │
 ├── docs/
 │   ├── error-handling.md        # Layer failure modes & graceful degradation
-│   ├── paper-draft.md           # Research paper draft
-│   └── project-documentation.md # This file
+│   ├── presentation-qa.md       # Q&A for presentation
+│   ├── project-details.md       # Project details documentation
+│   ├── project-documentation.md # This file
+│   ├── springer-paper_F.tex     # Springer paper final format
+│   ├── tech-stack.md            # Technical stack details
+│   ├── Papers/                  # Paper drafts, diagrams, and formatting
+│   └── ss/                      # Screenshots for documentation
+│
+├── model/
+│   └── saved_models/            # Local cached models
 │
 ├── notebooks/
-│   └── training.ipynb           # Colab notebook for model training
+│   ├── training.ipynb           # Colab notebook for model training
+│   ├── training_v1.ipynb        # V1 training notebook
+│   └── training_v2.ipynb        # V2 training notebook
 │
 └── scripts/
-    └── preprocess_data_v2.py    # Dataset cleaning & preprocessing
+    ├── build_ieee_paper.py      # Build script for IEEE format
+    ├── fix_llm_phishing_csv.py  # Fix formatting in LLM phishing dataset
+    ├── fix_multiline_csv.py     # Fix multiline dataset errors
+    ├── generate_ablation_plot.py# Generate ablation study plots
+    ├── preprocess_data.py       # V1 Dataset cleaning & preprocessing
+    ├── preprocess_data_v2.py    # V2 Dataset cleaning & preprocessing
+    ├── visualize_ablation.py    # Visualize ablation study
+    ├── visualize_architecture.py# Architecture diagrams generator
+    └── visualize_dataset.py     # Dataset distribution visualization
 ```
 
 ---
@@ -949,7 +968,18 @@ Checks against **27 brand names**: paypal, amazon, apple, microsoft, google, fac
 | Repetition Score | 15% | Bigram repetition ratio | High repeated bigrams |
 | Formality Score | 15% | Density of formal/AI discourse markers per 100 words | High density |
 
+#### How it Works (Linguistic Fingerprinting)
+
+The detector identifies "linguistic fingerprints" that distinguish human writing from AI writing by analyzing structural and statistical properties of the text:
+
+1.  **Burstiness (Sentence Length Variance):** Humans naturally vary sentence length (mixing short and long sentences). AI tends to produce sentences of more uniform length. The detector calculates sentence length variance; low variance flags the text as AI-like.
+2.  **Perplexity Proxy (Lexical Entropy):** AI models predict the "most likely" next word, resulting in lower entropy and more predictable word choices. The detector measures unigram entropy; low entropy indicates high predictability characteristic of LLMs.
+3.  **Vocabulary Richness (Root TTR):** Humans use a wider variety of unique words. AI often repeats high-probability tokens. The detector uses the Root Type-Token Ratio (`unique / √total`); a low ratio suggests repetitive AI-style vocabulary.
+4.  **Repetition Score (n-gram Loops):** AI text often contains subtle loops or repeated bigram patterns. The detector calculates the ratio of repeated bigrams to total bigrams.
+5.  **Formality Score (Discourse Markers):** LLMs are trained to be "helpful and professional," leading to an overuse of formal discourse connectors (e.g., *"Furthermore," "Moreover," "Rest assured"*). The detector monitors the density of these markers per 100 words.
+
 #### Signal Normalization Formulas
+
 
 | Signal | Formula | Range |
 |--------|---------|-------|

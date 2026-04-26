@@ -1,6 +1,5 @@
 """
-Email classifier service using cybersectony/phishing-email-detection-distilbert_v2.4.1
-from HuggingFace Hub.
+Email classifier service using cybersectony/phishing-email-detection-distilbert_v2.4.1.
 """
 
 import torch
@@ -23,7 +22,7 @@ PHISHING_LABEL_INDICES = {1, 3}  # phishing_url and phishing_url_alt
 
 class EmailClassifier:
     """
-    Singleton class for email classification using HuggingFace DistilBERT model.
+    Singleton class for email classification using DistilBERT model.
     """
 
     _instance: Optional["EmailClassifier"] = None
@@ -45,16 +44,16 @@ class EmailClassifier:
 
     def load_model(self) -> bool:
         """
-        Load the DistilBERT model and tokenizer from HuggingFace Hub.
+        Load the DistilBERT model and tokenizer
 
         Returns:
             True if model loaded successfully, False otherwise
         """
         try:
             model_id = settings.HF_MODEL_ID
-            logger.info(f"Loading model from HuggingFace Hub: {model_id}")
+            logger.info(f"Loading model: {model_id}")
 
-            # Load tokenizer and model from HuggingFace Hub
+            # Load tokenizer and model
             self.tokenizer = AutoTokenizer.from_pretrained(model_id)
             self.model = AutoModelForSequenceClassification.from_pretrained(model_id)
 
