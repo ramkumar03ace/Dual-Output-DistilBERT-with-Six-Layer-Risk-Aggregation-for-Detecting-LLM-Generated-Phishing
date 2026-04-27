@@ -24,6 +24,9 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
+# Suppress python-whois internal socket errors from spamming the console
+logging.getLogger("whois.whois").setLevel(logging.CRITICAL)
+
 
 @dataclass
 class URLAnalysisResult:

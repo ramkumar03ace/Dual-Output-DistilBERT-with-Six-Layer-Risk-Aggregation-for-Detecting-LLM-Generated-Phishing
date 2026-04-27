@@ -1,5 +1,5 @@
 /* ============================================
-   Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing — Gmail Content Script
+   Hybrid AI Defence — Gmail Content Script
    Extracts email body, subject & headers from Gmail DOM
    ============================================ */
 
@@ -184,7 +184,7 @@
             }
 
         } catch (e) {
-            console.warn('[Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing] Header extraction error:', e);
+            console.warn('[Hybrid AI Defence] Header extraction error:', e);
         }
 
         return headers;
@@ -225,5 +225,5 @@
         }
     });
 
-    console.log('[Dual-Output-DistilBERT-with-Six-Layer-Risk-Aggregation-for-Detecting-LLM-Generated-Phishing] Content script loaded on Gmail.');
+    console.log('[Hybrid AI Defence] Content script loaded on Gmail.');
 })();
